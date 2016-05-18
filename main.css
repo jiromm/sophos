@@ -4,35 +4,30 @@ aside {
 	height: 100%;
 	top: 0;
 	left: 0;
-	padding-top: 10px;
+	padding-top: 15px;
 	background: #efefef;
+	border-right: 1px solid #ccc;
 }
-
 .content {
-	padding-top: 10px;
+	padding-top: 15px;
 	margin: 0 300px;
 }
-
 .input-group .icon-addon .form-control {
 	border-radius: 0;
 }
-
 .icon-addon {
 	position: relative;
 	color: #555;
 	display: block;
 }
-
 .icon-addon:after,
 .icon-addon:before {
 	display: table;
 	content: " ";
 }
-
 .icon-addon:after {
 	clear: both;
 }
-
 .icon-addon .glyphicon {
 	position: absolute;
 	z-index: 2;
@@ -44,14 +39,12 @@ aside {
 	padding: 10px 0;
 	top: 1px
 }
-
 .icon-addon.addon-sm .form-control {
 	height: 30px;
 	padding: 5px 10px 5px 28px;
 	font-size: 12px;
 	line-height: 1.5;
 }
-
 .icon-addon.addon-sm .fa,
 .icon-addon.addon-sm .glyphicon {
 	margin-left: 0;
@@ -59,10 +52,29 @@ aside {
 	left: 5px;
 	top: -1px
 }
-
 .icon-addon .form-control:focus + .glyphicon,
 .icon-addon:hover .glyphicon,
 .icon-addon .form-control:focus + .fa,
 .icon-addon:hover .fa {
 	color: #2580db;
+}
+.search {
+	border-radius: 30px;
+}
+.libraries.row {
+	margin: -30px;
+}
+.libraries .list-group-item {
+	border-radius: 0;
+	background: transparent;
+	border-right: 0;
+	border-left: 0;
+}
+.libraries .badge {
+	background: transparent;
+	color: #aaa;
+}
+.libraries .badge.updated {
+	background: #5cb85c;
+	color: #fff;
 }
