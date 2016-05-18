@@ -1,0 +1,26 @@
+{
+  "name": "sophos",
+  "version": "0.0.1",
+  "description": "Sophos. The app who knows everything",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/electron/electron-quick-start.git"
+  },
+  "keywords": [
+    "Electron",
+    "sophos"
+  ],
+  "author": "Aram Baghdasaryan",
+  "license": "CC0-1.0",
+  "bugs": {
+    "url": "https://github.com/jiromm/sophos/issues"
+  },
+  "homepage": "https://github.com/jiromm/sophos",
+  "devDependencies": {
+    "electron-prebuilt": "^1.0.1"
+  }
+}
