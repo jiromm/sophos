@@ -1,8 +1,5 @@
-const electron = require('electron')
-// Module to control application life.
+const electron = require('electron');
 const app = electron.app;
-const Menu = electron.Menu;
-// Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow;
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -12,7 +9,7 @@ let mainWindow;
 function createWindow () {
 	// Create the browser window.
 	mainWindow = new BrowserWindow({
-		width: 1000,
+		width: 1600,
 		height: 600,
 		minWidth: 1000,
 		minHeight: 600
@@ -22,7 +19,7 @@ function createWindow () {
 	mainWindow.loadURL('file://' + __dirname + '/index.html');
 
 	// Open the DevTools.
-	//mainWindow.webContents.openDevTools();
+	mainWindow.webContents.openDevTools();
 
 	// Emitted when the window is closed.
 	mainWindow.on('closed', function () {

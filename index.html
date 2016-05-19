@@ -48,10 +48,16 @@
 </body>
 
 <script>
+	var fs = require('fs');
 	var $ = require('jquery');
+	var db = require('./db.js');
+	var schema = {};
+
 	window.jQuery = $;
+
 	require('bootstrap');
 
 	require('./renderer.js');
+	require('./app.js');
 </script>
 </html>
