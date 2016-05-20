@@ -4,13 +4,12 @@ aside {
 	height: 100%;
 	top: 0;
 	left: 0;
-	padding-top: 15px;
 	background: #efefef;
 	border-right: 1px solid #ccc;
 }
 .content {
 	padding-top: 15px;
-	margin: 0 300px;
+	margin: 0 0 0 300px;
 }
 .input-group .icon-addon .form-control {
 	border-radius: 0;
