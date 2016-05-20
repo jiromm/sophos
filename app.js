@@ -4,8 +4,14 @@ emitter.on('db-ready', function() {
 	getAllLibraries(function(err, libs) {
 		if (libs.length) {
 			drawLibraries(libs);
+
+			if (initialStart) {
+				fetchUpdates();
+			}
 		} else {
-			console.log('> db is empty...');
+			console.log('> db is empty');
+
+			initialStart = true;
 
 			getSchemas(function() {
 				emitter.trigger('db-ready');
@@ -15,13 +21,13 @@ emitter.on('db-ready', function() {
 });
 
 function getAllLibraries(callback) {
-	console.log('> getting libraries form db...');
+	console.log('> getting libraries form db');
 
 	db.find({}, callback);
 }
 
 function drawLibraries(libs) {
-	console.log('> drawing libraries...');
+	console.log('> drawing libraries');
 
 	let $libraries = $('.libraries');
 
@@ -83,4 +89,8 @@ function readFiles(dirname, onSuccess, onError) {
 
 		onSuccess(schemaList);
 	});
+}
+
+function fetchUpdates() {
+	console.log('> fetching updates');
 }
