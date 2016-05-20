@@ -78,3 +78,6 @@ aside {
 	background: #5cb85c;
 	color: #fff;
 }
+.form-control:focus {
+	box-shadow: none;
+}
