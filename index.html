@@ -27,13 +27,7 @@
 
 			<div class="row libraries">
 				<div class="col-xs-12">
-					<div class="list-group">
-						<a href="#" class="list-group-item"><span class="badge updated">1.5.12</span> Cras justo odio</a>
-						<a href="#" class="list-group-item"><span class="badge updated">3.0.2</span> Dapibus ac facilisis in</a>
-						<a href="#" class="list-group-item"><span class="badge">2.1.0</span> Morbi leo risus</a>
-						<a href="#" class="list-group-item"><span class="badge updated">15.0.0</span> Porta ac consectetur ac</a>
-						<a href="#" class="list-group-item"><span class="badge">0.0.2</span> Vestibulum at eros</a>
-					</div>
+					<div class="list-group"></div>
 				</div>
 			</div>
 		</div>
@@ -50,14 +44,28 @@
 <script>
 	var fs = require('fs');
 	var $ = require('jquery');
-	var db = require('./db.js');
-	var schema = {};
+	var Sister = require('sister');
+	var emitter = Sister();
 
 	window.jQuery = $;
 
 	require('bootstrap');
 
-	require('./renderer.js');
 	require('./app.js');
+	require('./renderer.js');
+
+	var Datastore = require('nedb'),
+		db = new Datastore({
+		filename: __dirname + '/db/sophos.db'
+	});
+	db.loadDatabase(function (err) {
+		if (err) {
+			console.log('>>> Error', err);
+			return false;
+		}
+
+		console.log('> nedb loaded');
+		emitter.trigger('db-ready');
+	});
 </script>
 </html>

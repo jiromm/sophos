@@ -1,27 +1,23 @@
-$(function() {
-	console.log('> start...');
-
-	//db.find({}, function(err, libs) { console.log(libs); });
+emitter.on('db-ready', function() {
+	console.log('> app started');
 
 	getAllLibraries(function(err, libs) {
 		if (libs.length) {
 			drawLibraries(libs);
 		} else {
 			console.log('> db is empty...');
-			getSchemas(function(fetchedLibs) {
-				drawLibraries(fetchedLibs);
+
+			getSchemas(function() {
+				emitter.trigger('db-ready');
 			});
 		}
 	});
 });
 
 function getAllLibraries(callback) {
-	const libs = [];
-
 	console.log('> getting libraries form db...');
-	callback(false, libs);
 
-	//db.find({}, callback);
+	db.find({}, callback);
 }
 
 function drawLibraries(libs) {
@@ -44,30 +40,27 @@ function drawLibraries(libs) {
 }
 
 function getSchemas(callback) {
-	var libs = [
-		{
-			_id: 1,
-			name: 'jQuery 2',
-			version: '1.2.3'
-		},
-		{
-			_id: 2,
-			name: 'Twitter Bootstrap 3',
-			version: '3.2.1'
-		}
-	];
-
 	readFiles(__dirname + '/schemas/', function(schemas) {
-		schema = schemas;
+		var asyncLoop = require('node-async-loop');
 
-		if (schema.length) {
+		asyncLoop(schemas, function (schema, next) {
 			db.insert(schema, function (err, newDoc) {
-				console.log('> Insert.', newDoc);
-			});
-		}
+				if (err) {
+					console.error('>>> Error: ' + err);
+					return false;
+				}
 
-		console.log('> bringing libraries from server...');
-		callback(libs);
+				console.log('> Insert.', newDoc);
+				next();
+			});
+		}, function (err) {
+			if (err) {
+				console.error('>>> Error: ' + err.message);
+				return false;
+			}
+
+			callback();
+		});
 	}, function(err) {
 		console.log('>>> ', err);
 	});
@@ -85,7 +78,7 @@ function readFiles(dirname, onSuccess, onError) {
 		filenames.forEach(function(filename) {
 			var schemaModule = require(dirname + filename);
 
-			schemaList[schemaModule.sch.uuid] = schemaModule.sch;
+			schemaList.push(schemaModule.sch.dbFields);
 		});
 
 		onSuccess(schemaList);
