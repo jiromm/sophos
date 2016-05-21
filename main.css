@@ -69,11 +69,17 @@ aside {
 	border-right: 0;
 	border-left: 0;
 }
-.libraries .badge {
+.libraries .badge.version {
 	background: transparent;
 	color: #aaa;
 }
-.libraries .badge.updated {
+.libraries a:not(.subscribed) {
+	color: #aaa !important
+}
+.libraries a.updated {
+	color: #000 !important;
+}
+.libraries a.updated .badge.version {
 	background: #5cb85c;
 	color: #fff;
 }
@@ -107,4 +113,15 @@ aside {
 	border-style: solid;
 	border-width: 21px 0 21px 10px;
 	border-color: transparent transparent transparent #f5f5f5;
+}
+.subscription {
+	border: none !important;
+	outline: none !important;
+	font-weight: normal !important;
+}
+.subscribed .subscription {
+	background: #993838 !important;
+}
+.libraries a:not(.subscribed) .subscription {
+	background: #690 !important;
 }

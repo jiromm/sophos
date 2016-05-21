@@ -3,10 +3,18 @@ console.log('> app started');
 emitter.on('db-ready', function() {
 	getAllLibraries(function(err, libs) {
 		if (libs.length) {
-			drawLibraries(libs);
-
 			if (initialStart) {
+				drawLibraries(libs, false);
 				fetchUpdates();
+			} else {
+				hasSubscription(function (err, count) {
+					if (err) {
+						console.error('%c >>> Error ', colorize, err);
+						return false;
+					}
+
+					drawLibraries(libs, count);
+				});
 			}
 		} else {
 			console.log('> db is empty');
@@ -21,31 +29,52 @@ emitter.on('db-ready', function() {
 });
 
 emitter.on('version-updated', function(item) {
-	var badge = $('.' + item.id).find('.badge');
+	var libEl = $('.' + item.id),
+		badge = libEl.find('.badge.version');
 
 	badge.html(item.version);
 
 	if (!initialStart) {
-		badge.addClass('updated');
+		libEl.addClass('updated');
 	}
 
 	console.log('> version updated for', item.id, 'to', item.version);
 });
 
 $(function() {
+	var libraries = $('.libraries');
+
 	$('.update-versions').on('click', function(e) {
 		e.preventDefault();
 
 		fetchUpdates();
 	});
 
-	$('.libraries').on('click', '.list-group-item', function(e) {
+	libraries.on('click', '.list-group-item', function(e) {
 		e.preventDefault();
 
 		$('.libraries .list-group-item').removeClass('selected');
 		$(this).addClass('selected');
 
 		showLibContent($(this).attr('data-id'));
+	});
+
+	libraries.on('mouseover', '.list-group-item', function(e) {
+		e.preventDefault();
+
+		$(this).find('.subscription').removeClass('hide');
+		$(this).find('.version').addClass('hide');
+	});
+
+	libraries.on('mouseout', '.list-group-item', function(e) {
+		e.preventDefault();
+
+		$(this).find('.subscription').addClass('hide');
+		$(this).find('.version').removeClass('hide');
+	});
+
+	libraries.on('mouseout', '.subscription', function(e) {
+		e.preventDefault();
 	});
 });
 
@@ -77,19 +106,46 @@ function getAllLibraries(callback) {
 	db.find({}, callback);
 }
 
-function drawLibraries(libs) {
-	console.log('> drawing libraries');
+function hasSubscription(callback) {
+	db.count({
+		isSubscribed: 1
+	}, callback);
+}
+
+function drawLibraries(libs, hasSubscription) {
+	console.log('> drawing libraries', hasSubscription);
 
 	let $libraries = $('.libraries');
 
 	if (libs.length) {
 		for (var i in libs) {
 			if (libs.hasOwnProperty(i)) {
-				var id = libs[i]._id;
+				var id = libs[i]._id,
+					additionalClasses = id,
+					version = libs[i].columns.version,
+					updated = '',
+					subscribe = '';
+
+				if (hasSubscription) {
+					additionalClasses += ' subscribed';
+				}
+
+				if (!initialStart) {
+					if (version != libs[i].columns.pinnedVersion) {
+						additionalClasses += ' updated';
+					}
+				}
+
+				if (libs[i].columns.isSubscribed) {
+					subscribe = 'Unsubscribe';
+				} else {
+					subscribe = 'Subscribe';
+				}
 
 				$libraries.find('.list-group').append(
-					'<a href="#' + id + '" class="list-group-item ' + id + '" data-id="' + id + '">' +
-						'<span class="badge">' + libs[i].columns.version + '</span> ' +
+					'<a href="#' + id + '" class="list-group-item ' + additionalClasses + '" data-id="' + id + '">' +
+						'<button class="badge subscription btn btn-success hide">' + subscribe + '</button> ' +
+						'<span class="badge version">' + version + '</span> ' +
 						libs[i].columns.name +
 					'</a>'
 				);
@@ -199,7 +255,8 @@ function updateVersion(item, version) {
 		_id: item._id
 	}, {
 		$set: {
-			'columns.version': version
+			'columns.version': version,
+			'columns.pinnedVersion': item.isSubscribed ? item.columns.pinnedVersion : version
 		}
 	}, {}, function (err, numReplaced) {
 		if (err) {
@@ -208,6 +265,7 @@ function updateVersion(item, version) {
 		}
 
 		console.log('>', item.uuid, 'updated in db from', item.columns.version, 'to', version);
+
 		emitter.trigger('version-updated', {
 			id: item._id,
 			version: version
