@@ -74,7 +74,7 @@ function getSchemas(callback) {
 		asyncLoop(schemas, function (schema, next) {
 			db.insert(schema, function (err, newDoc) {
 				if (err) {
-					console.error('>>> Error: ' + err);
+					console.error('%c >>> Error ', colorize, err);
 					return false;
 				}
 
@@ -83,7 +83,7 @@ function getSchemas(callback) {
 			});
 		}, function (err) {
 			if (err) {
-				console.error('>>> Error: ' + err.message);
+				console.error('%c >>> Error ', colorize, message);
 				return false;
 			}
 
@@ -118,7 +118,7 @@ function fetchUpdates() {
 
 	getAllLibraries(function(err, libs) {
 		if (err) {
-			console.log('>>> Error', err);
+			console.log('%c >>> Error ', colorize, err);
 			return false;
 		}
 
@@ -140,16 +140,20 @@ function fetchUpdate(item) {
 
 	request("http://jquery.com/download/", function(err, response, body) {
 		if (err || response.statusCode != 200) {
-			console.log('>>> Error', err, response);
+			console.log('%c >>> Error ', colorize, err, response);
 			return false;
 		}
 
 		var version = schema.sch.parseVersion(body);
 
-		if (item.columns.version != version) {
-			updateVersion(item, version);
+		if (version !== false) {
+			if (item.columns.version != version) {
+				updateVersion(item, version);
+			} else {
+				console.log('> There is no update for', item.uuid);
+			}
 		} else {
-			console.log('> There is no update for', item.uuid);
+			console.log('%c >>> Error ', colorize, 'cannot parse version for', item.uuid);
 		}
 	});
 }
@@ -165,7 +169,7 @@ function updateVersion(item, version) {
 		}
 	}, {}, function (err, numReplaced) {
 		if (err) {
-			console.log('>>> Error', err);
+			console.log('%c >>> Error ', colorize, err);
 			return false;
 		}
 
