@@ -18,13 +18,13 @@ exports.sch = {
 				re.lastIndex++;
 			}
 
-			console.log(m);
-
 			if (m.length > 1) {
 				return m[1];
 			}
 
 			return false;
 		}
+
+		return false;
 	}
 };

@@ -83,14 +83,17 @@ function getSchemas(callback) {
 			});
 		}, function (err) {
 			if (err) {
-				console.error('%c >>> Error ', colorize, message);
+				console.error('%c >>> Error ', colorize, err);
 				return false;
 			}
 
 			callback();
 		});
 	}, function(err) {
-		console.log('>>> ', err);
+		if (err) {
+			console.error('%c >>> Error ', colorize, err);
+			return false;
+		}
 	});
 }
 
@@ -138,7 +141,7 @@ function fetchUpdate(item) {
 	var schema = require('./schemas/' + item.uuid + '.js');
 	var request = require("request");
 
-	request("http://jquery.com/download/", function(err, response, body) {
+	request(item.versionUrl, function(err, response, body) {
 		if (err || response.statusCode != 200) {
 			console.log('%c >>> Error ', colorize, err, response);
 			return false;
@@ -159,7 +162,7 @@ function fetchUpdate(item) {
 }
 
 function updateVersion(item, version) {
-	console.log('> updateing version of', item.uuid, 'with id', item._id, 'to', version);
+	console.log('> updating version of', item.uuid, 'with id', item._id, 'to', version);
 
 	db.update({
 		_id: item._id
