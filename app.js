@@ -20,6 +20,18 @@ emitter.on('db-ready', function() {
 	});
 });
 
+emitter.on('version-updated', function(item) {
+	var badge = $('.' + item.id).find('.badge');
+
+	badge.html(item.version);
+
+	if (!initialStart) {
+		badge.addClass('updated');
+	}
+
+	console.log('> version updated for', item.id, 'to', item.version);
+});
+
 $(function() {
 	$('.update-versions').on('click', function(e) {
 		e.preventDefault();
@@ -134,10 +146,33 @@ function fetchUpdate(item) {
 
 		var version = schema.sch.parseVersion(body);
 
-		updateVersion(item, version);
+		if (item.columns.version != version) {
+			updateVersion(item, version);
+		} else {
+			console.log('> There is no update for', item.uuid);
+		}
 	});
 }
 
 function updateVersion(item, version) {
 	console.log('> updateing version of', item.uuid, 'with id', item._id, 'to', version);
+
+	db.update({
+		_id: item._id
+	}, {
+		$set: {
+			'columns.version': version
+		}
+	}, {}, function (err, numReplaced) {
+		if (err) {
+			console.log('>>> Error', err);
+			return false;
+		}
+
+		console.log('>', item.uuid, 'updated in db from', item.columns.version, 'to', version);
+		emitter.trigger('version-updated', {
+			id: item._id,
+			version: version
+		});
+	});
 }

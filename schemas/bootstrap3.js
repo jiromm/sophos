@@ -5,11 +5,11 @@ exports.sch = {
 		author: 'Twitter, Inc.',
 		url: 'http://getbootstrap.com/',
 		version: '3.0.0',
-		oldVersion: '3.0.0',
+		pinnedVersion: '3.0.0',
 		isSubscribed: 0
 	},
 	versionUrl: 'http://getbootstrap.com/',
-	parseVersion: function() {
+	parseVersion: function(body) {
 		return '3.0.0'
 	}
 };
