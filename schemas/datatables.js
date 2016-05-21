@@ -1,6 +1,6 @@
 exports.sch = {
 	uuid: 'datatables',
-	dbFields: {
+	columns: {
 		name: 'DataTables',
 		author: 'SpryMedia Ltd',
 		url: 'http://www.datatables.net/',
@@ -8,7 +8,8 @@ exports.sch = {
 		oldVersion: '1.0.0',
 		isSubscribed: 0
 	},
-	getVersion: function() {
+	versionUrl: 'http://www.datatables.net/',
+	parseVersion: function() {
 		return '1.2.3'
 	}
 };

@@ -20,8 +20,16 @@ emitter.on('db-ready', function() {
 	});
 });
 
+$(function() {
+	$('.update-versions').on('click', function(e) {
+		e.preventDefault();
+
+		fetchUpdates();
+	});
+});
+
 function getAllLibraries(callback) {
-	console.log('> getting libraries form db');
+	console.log('> select libraries from db');
 
 	db.find({}, callback);
 }
@@ -34,10 +42,12 @@ function drawLibraries(libs) {
 	if (libs.length) {
 		for (var i in libs) {
 			if (libs.hasOwnProperty(i)) {
+				var id = libs[i]._id;
+
 				$libraries.find('.list-group').append(
-					'<a href="#" class="list-group-item" data-id="' + libs[i].id + '">' +
-						'<span class="badge">' + libs[i].version + '</span> ' +
-						libs[i].name +
+					'<a href="#' + id + '" class="list-group-item ' + id + '">' +
+						'<span class="badge">' + libs[i].columns.version + '</span> ' +
+						libs[i].columns.name +
 					'</a>'
 				);
 			}
@@ -84,7 +94,7 @@ function readFiles(dirname, onSuccess, onError) {
 		filenames.forEach(function(filename) {
 			var schemaModule = require(dirname + filename);
 
-			schemaList.push(schemaModule.sch.dbFields);
+			schemaList.push(schemaModule.sch);
 		});
 
 		onSuccess(schemaList);
@@ -93,4 +103,41 @@ function readFiles(dirname, onSuccess, onError) {
 
 function fetchUpdates() {
 	console.log('> fetching updates');
+
+	getAllLibraries(function(err, libs) {
+		if (err) {
+			console.log('>>> Error', err);
+			return false;
+		}
+
+		if (libs.length) {
+			for (var i in libs) {
+				if (libs.hasOwnProperty(i)) {
+					fetchUpdate(libs[i]);
+				}
+			}
+		}
+	});
+}
+
+function fetchUpdate(item) {
+	console.log('> fetching update for', item.uuid, 'with id', item._id);
+
+	var schema = require('./schemas/' + item.uuid + '.js');
+	var request = require("request");
+
+	request("http://jquery.com/download/", function(err, response, body) {
+		if (err || response.statusCode != 200) {
+			console.log('>>> Error', err, response);
+			return false;
+		}
+
+		var version = schema.sch.parseVersion(body);
+
+		updateVersion(item, version);
+	});
+}
+
+function updateVersion(item, version) {
+	console.log('> updateing version of', item.uuid, 'with id', item._id, 'to', version);
 }
