@@ -57,7 +57,10 @@ function showLibContent(libId) {
 		}
 
 		$('.main-content').html(
-			'<p>' + data.columns.name + '</p>'
+			'<h2>' + data.columns.name + '</h2>' +
+			'<p><span class="text-muted">Vendor:</span> ' + data.columns.author + '</p>' +
+			'<p><span class="text-muted">Version:</span> ' + data.columns.version + '</p>' +
+			'<p><span class="text-muted">Url:</span> <a href="' + data.columns.url + '" target="_blank">' + data.columns.name + '</a></p>'
 		);
 	});
 }
