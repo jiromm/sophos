@@ -38,7 +38,35 @@ $(function() {
 
 		fetchUpdates();
 	});
+
+	$('.libraries').on('click', '.list-group-item', function(e) {
+		e.preventDefault();
+
+		$('.libraries .list-group-item').removeClass('selected');
+		$(this).addClass('selected');
+
+		showLibContent($(this).attr('data-id'));
+	});
 });
+
+function showLibContent(libId) {
+	getLibraryById(libId, function(err, data) {
+		if (err) {
+			console.error('%c >>> Error ', colorize, err);
+			return false;
+		}
+
+		$('.main-content').html(
+			'<p>' + data.columns.name + '</p>'
+		);
+	});
+}
+
+function getLibraryById(libId, callback) {
+	db.findOne({
+		_id: libId
+	}, callback);
+}
 
 function getAllLibraries(callback) {
 	console.log('> select libraries from db');
@@ -57,7 +85,7 @@ function drawLibraries(libs) {
 				var id = libs[i]._id;
 
 				$libraries.find('.list-group').append(
-					'<a href="#' + id + '" class="list-group-item ' + id + '">' +
+					'<a href="#' + id + '" class="list-group-item ' + id + '" data-id="' + id + '">' +
 						'<span class="badge">' + libs[i].columns.version + '</span> ' +
 						libs[i].columns.name +
 					'</a>'

@@ -80,3 +80,31 @@ aside {
 .form-control:focus {
 	box-shadow: none;
 }
+.libraries .list-group-item {
+	position: relative;
+}
+.libraries .list-group-item.selected {
+	background: #f5f5f5;
+}
+.libraries .list-group-item.selected:before {
+	content: "";
+	position: absolute;
+	top: 0;
+	right: -11px;
+	width: 0;
+	height: 0;
+	border-style: solid;
+	border-width: 21px 0 21px 10px;
+	border-color: transparent transparent transparent #bbb;
+}
+.libraries .list-group-item.selected:after {
+	content: "";
+	position: absolute;
+	top: 0;
+	right: -10px;
+	width: 0;
+	height: 0;
+	border-style: solid;
+	border-width: 21px 0 21px 10px;
+	border-color: transparent transparent transparent #f5f5f5;
+}
