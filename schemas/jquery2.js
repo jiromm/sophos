@@ -10,8 +10,21 @@ exports.sch = {
 	},
 	versionUrl: 'http://jquery.com/download/',
 	parseVersion: function(body) {
-		// Regexp pattern /Download the compressed, production jQuery (2\.\d{1,2}\.\d{1,2})/
+		var re = /Download the compressed, production jQuery (2\.\d+\.\d+)/gi;
+		var m;
 
-		return '2.0.0';
+		while ((m = re.exec(body)) !== null) {
+			if (m.index === re.lastIndex) {
+				re.lastIndex++;
+			}
+
+			console.log(m);
+
+			if (m.length > 1) {
+				return m[1];
+			}
+
+			return false;
+		}
 	}
 };
