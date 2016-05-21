@@ -10,6 +10,21 @@ exports.sch = {
 	},
 	versionUrl: 'http://www.datatables.net/',
 	parseVersion: function(body) {
-		return '1.0.0'
+		var re = /cdn\.datatables\.net\/(\d+\.\d+\.\d+)\/js\/jquery\.dataTables\.min\.js/gi;
+		var m;
+
+		while ((m = re.exec(body)) !== null) {
+			if (m.index === re.lastIndex) {
+				re.lastIndex++;
+			}
+
+			if (m.length > 1) {
+				return m[1];
+			}
+
+			return false;
+		}
+
+		return false;
 	}
 };

@@ -1,6 +1,6 @@
-emitter.on('db-ready', function() {
-	console.log('> app started');
+console.log('> app started');
 
+emitter.on('db-ready', function() {
 	getAllLibraries(function(err, libs) {
 		if (libs.length) {
 			drawLibraries(libs);
@@ -162,7 +162,7 @@ function fetchUpdate(item) {
 }
 
 function updateVersion(item, version) {
-	console.log('> updating version of', item.uuid, 'with id', item._id, 'to', version);
+	console.log('> updating version of', item.uuid, 'to', version);
 
 	db.update({
 		_id: item._id
