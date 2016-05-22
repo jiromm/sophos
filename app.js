@@ -21,8 +21,22 @@ emitter.on('db-ready', function() {
 	});
 });
 
+emitter.on('version-updated', function(lib) {
+	var libEl = $('.' + lib.item._id),
+			badge = libEl.find('.badge.version');
+
+	badge.html(lib.version);
+
+	if (!initialStart && lib.item.columns.isSubscribed) {
+		libEl.addClass('updated');
+	}
+
+	console.log('> version updated for', lib.item._id, 'to', lib.version);
+});
+
 $(function() {
-	var libraries = $('.libraries');
+	var libraries = $('.libraries'),
+		mainContent = $('.main-content');
 
 	$('.update-versions').on('click', function(e) {
 		e.preventDefault();
@@ -64,20 +78,41 @@ $(function() {
 			$(e.target).closest('a').attr('data-id')
 		);
 	});
+
+	mainContent.on('click', '.mark-as-done', function(e) {
+		e.preventDefault();
+
+		markAsDone(
+			$(e.target).attr('data-id')
+		);
+	});
 });
 
-emitter.on('version-updated', function(lib) {
-	var libEl = $('.' + lib.item._id),
-			badge = libEl.find('.badge.version');
+function markAsDone(libId) {
+	getLibraryById(libId, function(err, lib) {
+		if (err) {
+			console.error('%c >>> Error ', colorize, err);
+			return false;
+		}
 
-	badge.html(lib.version);
+		db.update({
+			_id: libId
+		}, {
+			$set: {
+				'columns.pinnedVersion': lib.columns.version
+			}
+		}, {}, function(err) {
+			if (err) {
+				console.error('%c >>> Error ', colorize, err);
+				return false;
+			}
 
-	if (!initialStart && lib.item.columns.isSubscribed) {
-		libEl.addClass('updated');
-	}
-
-	console.log('> version updated for', lib.item._id, 'to', lib.version);
-});
+			$('.' + libId).removeClass('updated');
+			$('.mark-as-done').remove();
+			$('.pinned-version').remove();
+		});
+	});
+}
 
 function changeSubscription(libId) {
 	getLibraryById(libId, function(err, lib) {
@@ -120,17 +155,26 @@ function updateLibSubscription(lib, isSubscribed, callback) {
 }
 
 function showLibContent(libId) {
-	getLibraryById(libId, function(err, data) {
+	getLibraryById(libId, function(err, lib) {
+		var markAsDone = '',
+			yourVersion = '';
+
 		if (err) {
 			console.error('%c >>> Error ', colorize, err);
 			return false;
 		}
 
+		if (lib.columns.version != lib.columns.pinnedVersion) {
+			markAsDone = ' <a href="#" class="btn btn-success btn-xs mark-as-done" data-id="' + libId + '">Mark as Done</a>';
+			yourVersion = '<p class="pinned-version"><span class="text-muted">Your Version:</span> ' + lib.columns.pinnedVersion + '</p>';
+		}
+
 		$('.main-content').html(
-			'<h2>' + data.columns.name + '</h2>' +
-			'<p><span class="text-muted">Vendor:</span> ' + data.columns.author + '</p>' +
-			'<p><span class="text-muted">Version:</span> ' + data.columns.version + '</p>' +
-			'<p><span class="text-muted">Url:</span> <a href="' + data.columns.url + '" target="_blank">' + data.columns.name + '</a></p>'
+			'<h2>' + lib.columns.name + markAsDone + '</h2>' +
+			'<p><span class="text-muted">Vendor:</span> ' + lib.columns.author + '</p>' +
+			yourVersion +
+			'<p><span class="text-muted">Latest Version:</span> ' + lib.columns.version + '</p>' +
+			'<p><span class="text-muted">Url:</span> <a href="' + lib.columns.url + '" target="_blank">' + lib.columns.name + '</a></p>'
 		);
 	});
 }
