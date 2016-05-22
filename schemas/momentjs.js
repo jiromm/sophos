@@ -1,14 +1,14 @@
 exports.sch = {
-	uuid: 'selectize',
+	uuid: 'momentjs',
 	columns: {
-		name: 'Selectize',
-		author: 'Brian Reavis',
-		url: 'http://brianreavis.github.io/selectize.js/',
+		name: 'Moment.js',
+		author: 'Tim Wood, Iskren Chernev',
+		url: 'http://momentjs.com/',
 		version: '',
 		pinnedVersion: '',
 		isSubscribed: 0
 	},
-	versionUrl: 'https://raw.githubusercontent.com/selectize/selectize.js/master/package.json',
+	versionUrl: 'https://raw.githubusercontent.com/moment/moment/develop/package.json',
 	parseVersion: function(body) {
 		var re = /"version": "(\d+\.\d+\.\d+)"/gi;
 		var m;

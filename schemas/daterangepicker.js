@@ -8,9 +8,9 @@ exports.sch = {
 		pinnedVersion: '',
 		isSubscribed: 0
 	},
-	versionUrl: 'https://raw.githubusercontent.com/dangrossman/bootstrap-daterangepicker/master/daterangepicker.js',
+	versionUrl: 'https://raw.githubusercontent.com/dangrossman/bootstrap-daterangepicker/master/package.json',
 	parseVersion: function(body) {
-		var re = /@version: (\d+\.\d+\.\d+)/gi;
+		var re = /"version": "(\d+\.\d+\.\d+)"/gi;
 		var m;
 
 		while ((m = re.exec(body)) !== null) {
