@@ -34,6 +34,27 @@ emitter.on('version-updated', function(lib) {
 	console.log('> version updated for', lib.item._id, 'to', lib.version);
 });
 
+emitter.on('progress', function(total) {
+	var updateBtn = $('.update-versions');
+
+	if (total) {
+		progress.total = total;
+		NProgress.start();
+		updateBtn.button('loading');
+	} else {
+		NProgress.set(1 / progress.total);
+		progress.status++;
+	}
+
+	console.log('> status', progress.status);
+
+	if (progress.total == progress.status) {
+		NProgress.done();
+		progress.status = 0;
+		updateBtn.button('reset');
+	}
+});
+
 $(function() {
 	var libraries = $('.libraries'),
 		mainContent = $('.main-content');
@@ -290,6 +311,8 @@ function fetchUpdates() {
 			return false;
 		}
 
+		emitter.trigger('progress', libs.length);
+
 		if (libs.length) {
 			for (var i in libs) {
 				if (libs.hasOwnProperty(i)) {
@@ -323,6 +346,8 @@ function fetchUpdate(item) {
 		} else {
 			console.log('%c >>> Error ', colorize, 'cannot parse version for', item.uuid);
 		}
+
+		emitter.trigger('progress');
 	});
 }
 

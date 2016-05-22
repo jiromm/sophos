@@ -8,6 +8,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 
 	<link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.min.css">
+	<link rel="stylesheet" href="./node_modules/nprogress/nprogress.css">
 	<link rel="stylesheet" href="./main.css">
 </head>
 
@@ -44,7 +45,7 @@
 		<div class="container-fluid">
 			<div class="row header">
 				<div class="col-xs-12">
-					<a href="#" class="btn btn-default btn-xs pull-right update-versions">Update Versions</a>
+					<a href="#" class="btn btn-default btn-xs pull-right update-versions" data-loading-text="updating...">Update Versions</a>
 				</div>
 			</div>
 
@@ -59,11 +60,19 @@
 	var fs = require('fs');
 	var $ = require('jquery');
 	var Sister = require('sister');
+	var NProgress = require('nprogress');
 	var emitter = Sister();
 	var initialStart = false;
+	var progress = {
+		total: 0,
+		status: 0
+	};
 	var colorize = 'background: red; color: white';
 
 	window.jQuery = $;
+	NProgress.configure({
+		showSpinner: false
+	});
 
 	require('bootstrap');
 	require('./app.js');
