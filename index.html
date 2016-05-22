@@ -82,9 +82,9 @@
 		db = new Datastore({
 		filename: __dirname + '/db/sophos.db'
 	});
-	db.loadDatabase(function (err) {
+	db.loadDatabase(function(err) {
 		if (err) {
-			console.log('>>> Error', err);
+			console.error('%c >>> Error ', colorize, err);
 			return false;
 		}
 
