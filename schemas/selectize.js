@@ -4,8 +4,8 @@ exports.sch = {
 		name: 'Selectize',
 		author: 'Brian Reavis',
 		url: 'http://brianreavis.github.io/selectize.js/',
-		version: '0.0.0',
-		pinnedVersion: '0.0.0',
+		version: '',
+		pinnedVersion: '',
 		isSubscribed: 0
 	},
 	versionUrl: 'https://raw.githubusercontent.com/brianreavis/selectize.js/master/dist/js/selectize.min.js',

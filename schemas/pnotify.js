@@ -1,16 +1,16 @@
 exports.sch = {
-	uuid: 'jquery2',
+	uuid: 'pnotify',
 	columns: {
-		name: 'jQuery 2',
-		author: 'jQuery Foundation, Inc.',
-		url: 'http://jquery.com/',
+		name: 'PNotify',
+		author: 'Hunter Perrin',
+		url: 'https://sciactive.com/pnotify/',
 		version: '',
 		pinnedVersion: '',
 		isSubscribed: 0
 	},
-	versionUrl: 'http://jquery.com/download/',
+	versionUrl: 'https://raw.githubusercontent.com/sciactive/pnotify/master/package.json',
 	parseVersion: function(body) {
-		var re = /Download the compressed, production jQuery (2\.\d+\.\d+)/gi;
+		var re = /"version": "(\d+\.\d+\.\d+)"/gi;
 		var m;
 
 		while ((m = re.exec(body)) !== null) {
