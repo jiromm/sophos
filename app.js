@@ -4,18 +4,11 @@ emitter.on('db-ready', function() {
 	getAllLibraries(function(err, libs) {
 		if (libs.length) {
 			if (initialStart) {
-				drawLibraries(libs, false);
 				fetchUpdates();
 			} else {
-				hasSubscription(function (err, count) {
-					if (err) {
-						console.error('%c >>> Error ', colorize, err);
-						return false;
-					}
-
-					drawLibraries(libs, count);
-				});
 			}
+
+			drawLibraries(libs);
 		} else {
 			console.log('> db is empty');
 
@@ -151,16 +144,12 @@ function getLibraryById(libId, callback) {
 function getAllLibraries(callback) {
 	console.log('> select libraries from db');
 
-	db.find({}, callback);
+	db.find({}).sort({
+		'columns.isSubscribed': -1
+	}).exec(callback);
 }
 
-function hasSubscription(callback) {
-	db.count({
-		isSubscribed: 1
-	}, callback);
-}
-
-function drawLibraries(libs, hasSubscription) {
+function drawLibraries(libs) {
 	console.log('> drawing libraries');
 
 	let $libraries = $('.libraries');

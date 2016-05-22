@@ -101,7 +101,7 @@ aside {
 .subscribed .subscription {
 	background: #333 !important;
 }
-.subscribed .version:after {
+.subscribed:after {
 	content: '';
 	position: absolute;
 	right: -3px;
