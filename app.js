@@ -28,19 +28,6 @@ emitter.on('db-ready', function() {
 	});
 });
 
-emitter.on('version-updated', function(item) {
-	var libEl = $('.' + item.id),
-		badge = libEl.find('.badge.version');
-
-	badge.html(item.version);
-
-	if (!initialStart) {
-		libEl.addClass('updated');
-	}
-
-	console.log('> version updated for', item.id, 'to', item.version);
-});
-
 $(function() {
 	var libraries = $('.libraries');
 
@@ -52,6 +39,10 @@ $(function() {
 
 	libraries.on('click', '.list-group-item', function(e) {
 		e.preventDefault();
+
+		if ($(e.target).hasClass('subscription')) {
+			return false;
+		}
 
 		$('.libraries .list-group-item').removeClass('selected');
 		$(this).addClass('selected');
@@ -73,10 +64,67 @@ $(function() {
 		$(this).find('.version').removeClass('hide');
 	});
 
-	libraries.on('mouseout', '.subscription', function(e) {
+	libraries.on('click', '.subscription', function(e) {
 		e.preventDefault();
+
+		changeSubscription(
+			$(e.target).closest('a').attr('data-id')
+		);
 	});
 });
+
+emitter.on('version-updated', function(lib) {
+	var libEl = $('.' + lib.item._id),
+			badge = libEl.find('.badge.version');
+
+	badge.html(lib.version);
+
+	if (!initialStart && lib.item.columns.isSubscribed) {
+		libEl.addClass('updated');
+	}
+
+	console.log('> version updated for', lib.item._id, 'to', lib.version);
+});
+
+function changeSubscription(libId) {
+	getLibraryById(libId, function(err, lib) {
+		var isSubscribed = lib.columns.isSubscribed,
+			libEl = $('.' + libId),
+			subscriptionEl = libEl.find('.subscription');
+
+		if (err) {
+			console.error('%c >>> Error ', colorize, err);
+			return false;
+		}
+
+		updateLibSubscription(lib, isSubscribed ? 0 : 1, function(err) {
+			if (err) {
+				console.error('%c >>> Error ', colorize, err);
+				return false;
+			}
+
+			if (isSubscribed) {
+				libEl.removeClass('subscribed');
+				libEl.removeClass('updated');
+				subscriptionEl.text('Subscribe');
+			} else {
+				libEl.addClass('subscribed');
+				subscriptionEl.text('Unsubscribe');
+			}
+		});
+	});
+}
+
+function updateLibSubscription(lib, isSubscribed, callback) {
+	db.update({
+		_id: lib._id
+	}, {
+		$set: {
+			'columns.isSubscribed': isSubscribed,
+			'columns.pinnedVersion': isSubscribed ? lib.columns.pinnedVersion : lib.columns.version
+		}
+	}, {}, callback);
+}
 
 function showLibContent(libId) {
 	getLibraryById(libId, function(err, data) {
@@ -113,7 +161,7 @@ function hasSubscription(callback) {
 }
 
 function drawLibraries(libs, hasSubscription) {
-	console.log('> drawing libraries', hasSubscription);
+	console.log('> drawing libraries');
 
 	let $libraries = $('.libraries');
 
@@ -126,10 +174,6 @@ function drawLibraries(libs, hasSubscription) {
 					updated = '',
 					subscribe = '';
 
-				if (hasSubscription) {
-					additionalClasses += ' subscribed';
-				}
-
 				if (!initialStart) {
 					if (version != libs[i].columns.pinnedVersion) {
 						additionalClasses += ' updated';
@@ -137,6 +181,7 @@ function drawLibraries(libs, hasSubscription) {
 				}
 
 				if (libs[i].columns.isSubscribed) {
+					additionalClasses += ' subscribed';
 					subscribe = 'Unsubscribe';
 				} else {
 					subscribe = 'Subscribe';
@@ -256,7 +301,7 @@ function updateVersion(item, version) {
 	}, {
 		$set: {
 			'columns.version': version,
-			'columns.pinnedVersion': item.isSubscribed ? item.columns.pinnedVersion : version
+			'columns.pinnedVersion': item.columns.isSubscribed ? item.columns.pinnedVersion : version
 		}
 	}, {}, function (err, numReplaced) {
 		if (err) {
@@ -267,7 +312,7 @@ function updateVersion(item, version) {
 		console.log('>', item.uuid, 'updated in db from', item.columns.version, 'to', version);
 
 		emitter.trigger('version-updated', {
-			id: item._id,
+			item: item,
 			version: version
 		});
 	});

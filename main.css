@@ -96,10 +96,21 @@ aside {
 	border: none !important;
 	outline: none !important;
 	font-weight: normal !important;
+	position: relative;
 }
 .subscribed .subscription {
-	background: #993838 !important;
+	background: #333 !important;
+}
+.subscribed .version:after {
+	content: '';
+	position: absolute;
+	right: -3px;
+	top: 16px;
+	width: 5px;
+	height: 5px;
+	background: #5cb85c;
+	border-radius: 50%;
 }
 .libraries a:not(.subscribed) .subscription {
-	background: #690 !important;
+	background: #5cb85c !important;
 }
