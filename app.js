@@ -11,13 +11,9 @@ class App {
 		App.Sister = require('sister');
 		App.NProgress = require('nprogress');
 		App.Datastore = require('nedb');
-
-		window.$ = require('jquery');
 	}
 
 	static configure() {
-		window.jQuery = App.$;
-
 		App.NProgress.configure({
 			showSpinner: false
 		});
@@ -154,20 +150,6 @@ class App {
 			$(this).addClass('selected');
 
 			App.showLibContent($(this).attr('data-id'));
-		});
-
-		libraries.on('mouseover', '.list-group-item', (e) => {
-			e.preventDefault();
-
-			$(this).find('.subscription').removeClass('hide');
-			$(this).find('.version').addClass('hide');
-		});
-
-		libraries.on('mouseout', '.list-group-item', (e) => {
-			e.preventDefault();
-
-			$(this).find('.subscription').addClass('hide');
-			$(this).find('.version').removeClass('hide');
 		});
 
 		libraries.on('click', '.subscription', (e) => {
@@ -311,7 +293,8 @@ class App {
 	static drawLibraries(libs) {
 		App.log('> drawing libraries');
 
-		let libraries = $('.libraries .list-group');
+		let libraries = $('.libraries .list-group'),
+			that = this;
 
 		libraries.html('');
 
@@ -324,7 +307,7 @@ class App {
 						updated = '',
 						subscribe = '';
 
-					if (!initialStart) {
+					if (!that.getInitialStart()) {
 						if (version != libs[i].columns.pinnedVersion) {
 							additionalClasses += ' updated';
 						}

@@ -80,6 +80,12 @@ aside {
 .search {
 	border-radius: 30px;
 }
+.libraries .list-group-item:hover .subscription {
+	display: block !important;
+}
+.libraries .list-group-item:hover .version {
+	display: none !important;
+}
 .libraries.row {
 	margin: -30px;
 }
