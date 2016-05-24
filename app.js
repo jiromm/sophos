@@ -5,7 +5,6 @@ emitter.on('db-ready', function() {
 		if (libs.length) {
 			if (initialStart) {
 				fetchUpdates();
-			} else {
 			}
 
 			drawLibraries(libs);
@@ -63,6 +62,19 @@ $(function() {
 		e.preventDefault();
 
 		fetchUpdates();
+	});
+
+	$('.search').on('input', function() {
+		searchLibraries($(this).val(), function(err, libs) {
+			if (err) {
+				console.error('%c >>> Error ', colorize, err);
+				return false;
+			}
+
+			console.log(libs);
+
+			drawLibraries(libs);
+		});
 	});
 
 	libraries.on('click', '.list-group-item', function(e) {
@@ -214,10 +226,27 @@ function getAllLibraries(callback) {
 	}).exec(callback);
 }
 
+function searchLibraries(name, callback) {
+	console.log('> searching libraries by', name);
+
+	if (name == '') {
+		getAllLibraries(callback);
+		return false;
+	}
+
+	db.find({
+		'columns.name': new RegExp(name, 'gi')
+	}).sort({
+		'columns.isSubscribed': -1
+	}).exec(callback);
+}
+
 function drawLibraries(libs) {
 	console.log('> drawing libraries');
 
 	let $libraries = $('.libraries');
+
+	$('.list-group').html('');
 
 	if (libs.length) {
 		for (var i in libs) {
