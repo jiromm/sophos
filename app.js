@@ -71,8 +71,6 @@ $(function() {
 				return false;
 			}
 
-			console.log(libs);
-
 			drawLibraries(libs);
 		});
 	});
