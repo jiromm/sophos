@@ -2,24 +2,26 @@
 
 class App {
 	constructor() {
-		App.loadPackages();
-		App.configure();
+		this.loadPackages();
+		this.configure();
 	}
 
-	static loadPackages() {
-		App.fs = require('fs');
-		App.Sister = require('sister');
-		App.NProgress = require('nprogress');
-		App.Datastore = require('nedb');
+	loadPackages() {
+		this.fs = require('fs');
+		this.Sister = require('sister');
+		this.NProgress = require('nprogress');
+		this.Datastore = require('nedb');
+
+		require('bootstrap');
 	}
 
-	static configure() {
-		App.NProgress.configure({
+	configure() {
+		this.NProgress.configure({
 			showSpinner: false
 		});
 
-		App.emitter = App.Sister();
-		App.db = new App.Datastore({
+		this.emitter = this.Sister();
+		this.db = new this.Datastore({
 			filename: __dirname + '/db/sophos.db'
 		});
 
@@ -29,38 +31,38 @@ class App {
 			status: 0
 		};
 
-		App.documentReady(() => {
-			App.configureListeners();
+		this.documentReady(() => {
+			this.configureListeners();
 		});
 	}
 
 	run() {
-		App.db.loadDatabase(App.onDbLoad);
+		let that = this;
+
+		this.db.loadDatabase((err) => {
+			if (err) {
+				that.error(err);
+				return false;
+			}
+
+			this.log('> nedb loaded');
+			that.emitter.trigger('db-ready');
+		});
 	}
 
-	static onDbLoad(err) {
-		if (err) {
-			App.error(err);
-			return false;
-		}
-
-		App.log('> nedb loaded');
-		App.emitter.trigger('db-ready');
-	}
-
-	static documentReady(callback) {
+	documentReady(callback) {
 		$(callback);
 	}
 
-	static setInitialStart(val) {
+	setInitialStart(val) {
 		this.initialStart = val;
 	}
 
-	static getInitialStart() {
+	getInitialStart() {
 		return this.initialStart;
 	}
 
-	static configureListeners() {
+	configureListeners() {
 		var that = this;
 
 		this.emitter.on('db-ready', () => {
@@ -83,41 +85,41 @@ class App {
 			});
 		});
 
-		App.emitter.on('version-updated', (lib) => {
+		this.emitter.on('version-updated', (lib) => {
 			var libEl = $('.' + lib.item._id),
 				badge = libEl.find('.badge.version');
 
 			badge.html(lib.version);
 
-			if (!App.initialStart && lib.item.columns.isSubscribed) {
+			if (!that.initialStart && lib.item.columns.isSubscribed) {
 				libEl.addClass('updated');
 			}
 
-			App.log('> version updated for', lib.item._id, 'to', lib.version);
+			that.log('> version updated for', lib.item._id, 'to', lib.version);
 		});
 
-		App.emitter.on('progress', (total) => {
-			var updateBtn = $('.update-versions');
+		this.emitter.on('progress', (total) => {
+			let updateBtn = $('.update-versions');
 
 			if (total) {
-				App.progress.total = total;
-				App.NProgress.start();
+				that.progress.total = total;
+				that.NProgress.start();
 
 				updateBtn.button('loading');
 			} else {
-				App.NProgress.set(1 / App.progress.total);
-				App.progress.status++;
+				that.NProgress.set(1 / that.progress.total);
+				that.progress.status++;
 			}
 
-			if (progress.total == App.progress.status) {
-				App.NProgress.done();
-				App.progress.status = 0;
+			if (that.progress.total == that.progress.status) {
+				that.NProgress.done();
+				that.progress.status = 0;
 
 				updateBtn.button('reset');
 			}
 		});
 
-		var libraries = $('.libraries'),
+		let libraries = $('.libraries'),
 			mainContent = $('.main-content'),
 			updateVersion = $('.update-versions'),
 			search = $('.search');
@@ -125,17 +127,17 @@ class App {
 		updateVersion.on('click', (e) => {
 			e.preventDefault();
 
-			App.fetchUpdates();
+			that.fetchUpdates();
 		});
 
-		search.on('input', () => {
-			App.searchLibraries($(this).val(), (err, libs) => {
+		search.on('input', (e) => {
+			that.searchLibraries($(e.target).val(), (err, libs) => {
 				if (err) {
-					App.error(err);
+					that.error(err);
 					return false;
 				}
 
-				App.drawLibraries(libs);
+				that.drawLibraries(libs);
 			});
 		});
 
@@ -146,16 +148,18 @@ class App {
 				return false;
 			}
 
-			$('.libraries .list-group-item').removeClass('selected');
-			$(this).addClass('selected');
+			let itemEl = $(e.target).closest('.list-group-item');
 
-			App.showLibContent($(this).attr('data-id'));
+			$('.libraries .list-group-item').removeClass('selected');
+			itemEl.addClass('selected');
+
+			that.showLibContent(itemEl.attr('data-id'));
 		});
 
 		libraries.on('click', '.subscription', (e) => {
 			e.preventDefault();
 
-			App.changeSubscription(
+			that.changeSubscription(
 				$(e.target).closest('a').attr('data-id')
 			);
 		});
@@ -163,20 +167,22 @@ class App {
 		mainContent.on('click', '.mark-as-done', (e) => {
 			e.preventDefault();
 
-			App.markAsDone(
+			that.markAsDone(
 				$(e.target).attr('data-id')
 			);
 		});
 	}
 
-	static markAsDone(libId) {
-		App.getLibraryById(libId, (err, lib) => {
+	markAsDone(libId) {
+		let that = this;
+
+		this.getLibraryById(libId, (err, lib) => {
 			if (err) {
-				App.error(err);
+				that.error(err);
 				return false;
 			}
 
-			App.db.update({
+			that.db.update({
 				_id: libId
 			}, {
 				$set: {
@@ -184,7 +190,7 @@ class App {
 				}
 			}, {}, (err) => {
 				if (err) {
-					App.error(err);
+					that.error(err);
 					return false;
 				}
 
@@ -195,20 +201,22 @@ class App {
 		});
 	}
 
-	static changeSubscription(libId) {
-		App.getLibraryById(libId, (err, lib) => {
+	changeSubscription(libId) {
+		let that = this;
+
+		this.getLibraryById(libId, (err, lib) => {
 			let isSubscribed = lib.columns.isSubscribed,
 				libEl = $('.' + libId),
 				subscriptionEl = libEl.find('.subscription');
 
 			if (err) {
-				App.error(err);
+				that.error(err);
 				return false;
 			}
 
-			App.updateLibSubscription(lib, isSubscribed ? 0 : 1, (err) => {
+			that.updateLibSubscription(lib, isSubscribed ? 0 : 1, (err) => {
 				if (err) {
-					App.error(err);
+					that.error(err);
 					return false;
 				}
 
@@ -224,8 +232,8 @@ class App {
 		});
 	}
 
-	static updateLibSubscription(lib, isSubscribed, callback) {
-		App.db.update({
+	updateLibSubscription(lib, isSubscribed, callback) {
+		this.db.update({
 			_id: lib._id
 		}, {
 			$set: {
@@ -235,14 +243,16 @@ class App {
 		}, {}, callback);
 	}
 
-	static showLibContent(libId) {
-		App.getLibraryById(libId, (err, lib) => {
+	showLibContent(libId) {
+		let that = this;
+
+		this.getLibraryById(libId, (err, lib) => {
 			let markAsDone = '',
 				yourVersion = '',
 				content = $('.main-content');
 
 			if (err) {
-				App.error(err);
+				that.error(err);
 				return false;
 			}
 
@@ -261,37 +271,37 @@ class App {
 		});
 	}
 
-	static getLibraryById(libId, callback) {
-		App.db.findOne({
+	getLibraryById(libId, callback) {
+		this.db.findOne({
 			_id: libId
 		}, callback);
 	}
 
-	static getAllLibraries(callback) {
-		App.log('> select libraries from db');
+	getAllLibraries(callback) {
+		this.log('> select libraries from db');
 
-		App.db.find({}).sort({
+		this.db.find({}).sort({
 			'columns.isSubscribed': -1
 		}).exec(callback);
 	}
 
-	static searchLibraries(name, callback) {
-		App.log('> searching libraries by', name);
+	searchLibraries(name, callback) {
+		this.log('> searching libraries by', name);
 
 		if (name == '') {
-			App.getAllLibraries(callback);
+			this.getAllLibraries(callback);
 			return false;
 		}
 
-		App.db.find({
+		this.db.find({
 			'columns.name': new RegExp(name, 'gi')
 		}).sort({
 			'columns.isSubscribed': -1
 		}).exec(callback);
 	}
 
-	static drawLibraries(libs) {
-		App.log('> drawing libraries');
+	drawLibraries(libs) {
+		this.log('> drawing libraries');
 
 		let libraries = $('.libraries .list-group'),
 			that = this;
@@ -332,23 +342,25 @@ class App {
 		}
 	}
 
-	static getSchemas(callback) {
-		readFiles(__dirname + '/schemas/', (schemas) => {
+	getSchemas(callback) {
+		var that = this;
+
+		this.readFiles(__dirname + '/schemas/', (schemas) => {
 			let asyncLoop = require('node-async-loop');
 
 			asyncLoop(schemas, (schema, next) => {
-				App.db.insert(schema, (err, lib) => {
+				that.db.insert(schema, (err, lib) => {
 					if (err) {
-						App.error(err);
+						that.error(err);
 						return false;
 					}
 
-					App.log('> Insert.', lib);
+					that.log('> Insert.', lib);
 					next();
 				});
 			}, (err) => {
 				if (err) {
-					App.error(err);
+					that.error(err);
 					return false;
 				}
 
@@ -357,12 +369,13 @@ class App {
 		});
 	}
 
-	static readFiles(dirname, onSuccess) {
-		var schemaList = [];
+	readFiles(dirname, onSuccess) {
+		var schemaList = [],
+			that = this;
 
-		App.fs.readdir(dirname, (err, filenames) => {
+		this.fs.readdir(dirname, (err, filenames) => {
 			if (err) {
-				App.error(err);
+				that.error(err);
 				return;
 			}
 
@@ -376,59 +389,64 @@ class App {
 		});
 	}
 
-	static fetchUpdates() {
-		App.log('> fetching updates');
+	fetchUpdates() {
+		var that = this;
 
-		App.getAllLibraries((err, libs) => {
+		this.log('> fetching updates');
+
+		this.getAllLibraries((err, libs) => {
 			if (err) {
-				App.log(err);
+				that.log(err);
 				return false;
 			}
 
-			App.emitter.trigger('progress', libs.length);
+			that.emitter.trigger('progress', libs.length);
 
 			if (libs.length) {
 				for (var i in libs) {
 					if (libs.hasOwnProperty(i)) {
-						App.fetchUpdate(libs[i]);
+						that.fetchUpdate(libs[i]);
 					}
 				}
 			}
 		});
 	}
 
-	static fetchUpdate(item) {
-		App.log('> fetching update for', item.uuid, 'with id', item._id);
+	fetchUpdate(item) {
+		this.log('> fetching update for', item.uuid, 'with id', item._id);
 
-		var schema = require('./schemas/' + item.uuid + '.js');
-		var request = require("request");
+		var schema = require('./schemas/' + item.uuid + '.js'),
+			request = require("request"),
+			that = this;
 
 		request(item.versionUrl, (err, response, body) => {
 			if (err || response.statusCode != 200) {
-				App.log(err);
+				that.log(err);
 				return false;
 			}
 
-			var version = schema.sch.parseVersion(body);
+			const version = schema.sch.parseVersion(body);
 
 			if (version !== false) {
 				if (item.columns.version != version) {
-					App.updateVersion(item, version);
+					that.updateVersion(item, version);
 				} else {
-					App.log('> There is no update for', item.uuid);
+					that.log('> There is no update for', item.uuid);
 				}
 			} else {
-				App.log('%c >>> Error ', colorize, 'cannot parse version for', item.uuid);
+				that.log('cannot parse version for');
 			}
 
-			App.emitter.trigger('progress');
+			that.emitter.trigger('progress');
 		});
 	}
 
-	static updateVersion(item, version) {
-		App.log('> updating version of', item.uuid, 'to', version);
+	updateVersion(item, version) {
+		let that = this;
 
-		App.db.update({
+		this.log('> updating version of', item.uuid, 'to', version);
+
+		this.db.update({
 			_id: item._id
 		}, {
 			$set: {
@@ -437,24 +455,24 @@ class App {
 			}
 		}, {}, (err) => {
 			if (err) {
-				App.log(err);
+				that.log(err);
 				return false;
 			}
 
-			App.log('>', item.uuid, 'updated in db from', item.columns.version, 'to', version);
+			that.log('>', item.uuid, 'updated in db from', item.columns.version, 'to', version);
 
-			App.emitter.trigger('version-updated', {
+			that.emitter.trigger('version-updated', {
 				item: item,
 				version: version
 			});
 		});
 	}
 
-	static log(message) {
+	log(...message) {
 		console.log(message);
 	}
 
-	static error(message) {
+	error(message) {
 		console.log('%c >>> Error ', colorize, message);
 	}
 }
