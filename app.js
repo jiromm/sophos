@@ -1,404 +1,479 @@
-console.log('> app started');
+'use strict';
 
-emitter.on('db-ready', function() {
-	getAllLibraries(function(err, libs) {
-		if (libs.length) {
-			if (initialStart) {
-				fetchUpdates();
-			}
-
-			drawLibraries(libs);
-		} else {
-			console.log('> db is empty');
-
-			initialStart = true;
-
-			getSchemas(function() {
-				emitter.trigger('db-ready');
-			});
-		}
-	});
-});
-
-emitter.on('version-updated', function(lib) {
-	var libEl = $('.' + lib.item._id),
-			badge = libEl.find('.badge.version');
-
-	badge.html(lib.version);
-
-	if (!initialStart && lib.item.columns.isSubscribed) {
-		libEl.addClass('updated');
+class App {
+	constructor() {
+		App.loadPackages();
+		App.configure();
 	}
 
-	console.log('> version updated for', lib.item._id, 'to', lib.version);
-});
+	static loadPackages() {
+		App.fs = require('fs');
+		App.Sister = require('sister');
+		App.NProgress = require('nprogress');
+		App.Datastore = require('nedb');
 
-emitter.on('progress', function(total) {
-	var updateBtn = $('.update-versions');
-
-	if (total) {
-		progress.total = total;
-		NProgress.start();
-		updateBtn.button('loading');
-	} else {
-		NProgress.set(1 / progress.total);
-		progress.status++;
+		window.$ = require('jquery');
 	}
 
-	console.log('> status', progress.status);
+	static configure() {
+		window.jQuery = App.$;
 
-	if (progress.total == progress.status) {
-		NProgress.done();
-		progress.status = 0;
-		updateBtn.button('reset');
-	}
-});
-
-$(function() {
-	var libraries = $('.libraries'),
-		mainContent = $('.main-content');
-
-	$('.update-versions').on('click', function(e) {
-		e.preventDefault();
-
-		fetchUpdates();
-	});
-
-	$('.search').on('input', function() {
-		searchLibraries($(this).val(), function(err, libs) {
-			if (err) {
-				console.error('%c >>> Error ', colorize, err);
-				return false;
-			}
-
-			drawLibraries(libs);
+		App.NProgress.configure({
+			showSpinner: false
 		});
-	});
 
-	libraries.on('click', '.list-group-item', function(e) {
-		e.preventDefault();
-
-		if ($(e.target).hasClass('subscription')) {
-			return false;
-		}
-
-		$('.libraries .list-group-item').removeClass('selected');
-		$(this).addClass('selected');
-
-		showLibContent($(this).attr('data-id'));
-	});
-
-	libraries.on('mouseover', '.list-group-item', function(e) {
-		e.preventDefault();
-
-		$(this).find('.subscription').removeClass('hide');
-		$(this).find('.version').addClass('hide');
-	});
-
-	libraries.on('mouseout', '.list-group-item', function(e) {
-		e.preventDefault();
-
-		$(this).find('.subscription').addClass('hide');
-		$(this).find('.version').removeClass('hide');
-	});
-
-	libraries.on('click', '.subscription', function(e) {
-		e.preventDefault();
-
-		changeSubscription(
-			$(e.target).closest('a').attr('data-id')
-		);
-	});
-
-	mainContent.on('click', '.mark-as-done', function(e) {
-		e.preventDefault();
-
-		markAsDone(
-			$(e.target).attr('data-id')
-		);
-	});
-});
-
-function markAsDone(libId) {
-	getLibraryById(libId, function(err, lib) {
-		if (err) {
-			console.error('%c >>> Error ', colorize, err);
-			return false;
-		}
-
-		db.update({
-			_id: libId
-		}, {
-			$set: {
-				'columns.pinnedVersion': lib.columns.version
-			}
-		}, {}, function(err) {
-			if (err) {
-				console.error('%c >>> Error ', colorize, err);
-				return false;
-			}
-
-			$('.' + libId).removeClass('updated');
-			$('.mark-as-done').remove();
-			$('.pinned-version').remove();
+		App.emitter = App.Sister();
+		App.db = new App.Datastore({
+			filename: __dirname + '/db/sophos.db'
 		});
-	});
-}
 
-function changeSubscription(libId) {
-	getLibraryById(libId, function(err, lib) {
-		var isSubscribed = lib.columns.isSubscribed,
-			libEl = $('.' + libId),
-			subscriptionEl = libEl.find('.subscription');
+		this.initialStart = false;
+		this.progress = {
+			total: 0,
+			status: 0
+		};
 
-		if (err) {
-			console.error('%c >>> Error ', colorize, err);
-			return false;
-		}
-
-		updateLibSubscription(lib, isSubscribed ? 0 : 1, function(err) {
-			if (err) {
-				console.error('%c >>> Error ', colorize, err);
-				return false;
-			}
-
-			if (isSubscribed) {
-				libEl.removeClass('subscribed');
-				libEl.removeClass('updated');
-				subscriptionEl.text('Subscribe');
-			} else {
-				libEl.addClass('subscribed');
-				subscriptionEl.text('Unsubscribe');
-			}
+		App.documentReady(() => {
+			App.configureListeners();
 		});
-	});
-}
-
-function updateLibSubscription(lib, isSubscribed, callback) {
-	db.update({
-		_id: lib._id
-	}, {
-		$set: {
-			'columns.isSubscribed': isSubscribed,
-			'columns.pinnedVersion': isSubscribed ? lib.columns.pinnedVersion : lib.columns.version
-		}
-	}, {}, callback);
-}
-
-function showLibContent(libId) {
-	getLibraryById(libId, function(err, lib) {
-		var markAsDone = '',
-			yourVersion = '';
-
-		if (err) {
-			console.error('%c >>> Error ', colorize, err);
-			return false;
-		}
-
-		if (lib.columns.version != lib.columns.pinnedVersion) {
-			markAsDone = ' <a href="#" class="btn btn-success btn-xs mark-as-done" data-id="' + libId + '">Mark as Done</a>';
-			yourVersion = '<p class="pinned-version"><span class="text-muted">Your Version:</span> ' + lib.columns.pinnedVersion + '</p>';
-		}
-
-		$('.main-content').html(
-			'<h2>' + lib.columns.name + markAsDone + '</h2>' +
-			'<p><span class="text-muted">Vendor:</span> ' + lib.columns.author + '</p>' +
-			yourVersion +
-			'<p><span class="text-muted">Latest Version:</span> ' + lib.columns.version + '</p>' +
-			'<p><span class="text-muted">Url:</span> <a href="' + lib.columns.url + '" target="_blank">' + lib.columns.name + '</a></p>'
-		);
-	});
-}
-
-function getLibraryById(libId, callback) {
-	db.findOne({
-		_id: libId
-	}, callback);
-}
-
-function getAllLibraries(callback) {
-	console.log('> select libraries from db');
-
-	db.find({}).sort({
-		'columns.isSubscribed': -1
-	}).exec(callback);
-}
-
-function searchLibraries(name, callback) {
-	console.log('> searching libraries by', name);
-
-	if (name == '') {
-		getAllLibraries(callback);
-		return false;
 	}
 
-	db.find({
-		'columns.name': new RegExp(name, 'gi')
-	}).sort({
-		'columns.isSubscribed': -1
-	}).exec(callback);
-}
+	run() {
+		App.db.loadDatabase(App.onDbLoad);
+	}
 
-function drawLibraries(libs) {
-	console.log('> drawing libraries');
+	static onDbLoad(err) {
+		if (err) {
+			App.error(err);
+			return false;
+		}
 
-	let $libraries = $('.libraries');
+		App.log('> nedb loaded');
+		App.emitter.trigger('db-ready');
+	}
 
-	$('.list-group').html('');
+	static documentReady(callback) {
+		$(callback);
+	}
 
-	if (libs.length) {
-		for (var i in libs) {
-			if (libs.hasOwnProperty(i)) {
-				var id = libs[i]._id,
-					additionalClasses = id,
-					version = libs[i].columns.version,
-					updated = '',
-					subscribe = '';
+	static setInitialStart(val) {
+		this.initialStart = val;
+	}
 
-				if (!initialStart) {
-					if (version != libs[i].columns.pinnedVersion) {
-						additionalClasses += ' updated';
+	static getInitialStart() {
+		return this.initialStart;
+	}
+
+	static configureListeners() {
+		var that = this;
+
+		this.emitter.on('db-ready', () => {
+			that.getAllLibraries((err, libs) => {
+				if (libs.length) {
+					if (that.getInitialStart()) {
+						that.fetchUpdates();
 					}
-				}
 
-				if (libs[i].columns.isSubscribed) {
-					additionalClasses += ' subscribed';
-					subscribe = 'Unsubscribe';
+					that.drawLibraries(libs);
 				} else {
-					subscribe = 'Subscribe';
+					that.log('> db is empty');
+
+					that.setInitialStart(true);
+
+					that.getSchemas(() => {
+						that.emitter.trigger('db-ready');
+					});
 				}
+			});
+		});
 
-				$libraries.find('.list-group').append(
-					'<a href="#' + id + '" class="list-group-item ' + additionalClasses + '" data-id="' + id + '">' +
-						'<button class="badge subscription btn btn-success hide">' + subscribe + '</button> ' +
-						'<span class="badge version">' + version + '</span> ' +
-						libs[i].columns.name +
-					'</a>'
-				);
+		App.emitter.on('version-updated', (lib) => {
+			var libEl = $('.' + lib.item._id),
+				badge = libEl.find('.badge.version');
+
+			badge.html(lib.version);
+
+			if (!App.initialStart && lib.item.columns.isSubscribed) {
+				libEl.addClass('updated');
 			}
-		}
-	}
-}
 
-function getSchemas(callback) {
-	readFiles(__dirname + '/schemas/', function(schemas) {
-		var asyncLoop = require('node-async-loop');
+			App.log('> version updated for', lib.item._id, 'to', lib.version);
+		});
 
-		asyncLoop(schemas, function (schema, next) {
-			db.insert(schema, function (err, newDoc) {
+		App.emitter.on('progress', (total) => {
+			var updateBtn = $('.update-versions');
+
+			if (total) {
+				App.progress.total = total;
+				App.NProgress.start();
+
+				updateBtn.button('loading');
+			} else {
+				App.NProgress.set(1 / App.progress.total);
+				App.progress.status++;
+			}
+
+			if (progress.total == App.progress.status) {
+				App.NProgress.done();
+				App.progress.status = 0;
+
+				updateBtn.button('reset');
+			}
+		});
+
+		var libraries = $('.libraries'),
+			mainContent = $('.main-content'),
+			updateVersion = $('.update-versions'),
+			search = $('.search');
+
+		updateVersion.on('click', (e) => {
+			e.preventDefault();
+
+			App.fetchUpdates();
+		});
+
+		search.on('input', () => {
+			App.searchLibraries($(this).val(), (err, libs) => {
 				if (err) {
-					console.error('%c >>> Error ', colorize, err);
+					App.error(err);
 					return false;
 				}
 
-				console.log('> Insert.', newDoc);
-				next();
+				App.drawLibraries(libs);
 			});
-		}, function (err) {
-			if (err) {
-				console.error('%c >>> Error ', colorize, err);
+		});
+
+		libraries.on('click', '.list-group-item', (e) => {
+			e.preventDefault();
+
+			if ($(e.target).hasClass('subscription')) {
 				return false;
 			}
 
-			callback();
-		});
-	}, function(err) {
-		if (err) {
-			console.error('%c >>> Error ', colorize, err);
-			return false;
-		}
-	});
-}
+			$('.libraries .list-group-item').removeClass('selected');
+			$(this).addClass('selected');
 
-function readFiles(dirname, onSuccess, onError) {
-	var schemaList = [];
-
-	fs.readdir(dirname, function(err, filenames) {
-		if (err) {
-			onError(err);
-			return;
-		}
-
-		filenames.forEach(function(filename) {
-			var schemaModule = require(dirname + filename);
-
-			schemaList.push(schemaModule.sch);
+			App.showLibContent($(this).attr('data-id'));
 		});
 
-		onSuccess(schemaList);
-	});
-}
+		libraries.on('mouseover', '.list-group-item', (e) => {
+			e.preventDefault();
 
-function fetchUpdates() {
-	console.log('> fetching updates');
+			$(this).find('.subscription').removeClass('hide');
+			$(this).find('.version').addClass('hide');
+		});
 
-	getAllLibraries(function(err, libs) {
-		if (err) {
-			console.log('%c >>> Error ', colorize, err);
+		libraries.on('mouseout', '.list-group-item', (e) => {
+			e.preventDefault();
+
+			$(this).find('.subscription').addClass('hide');
+			$(this).find('.version').removeClass('hide');
+		});
+
+		libraries.on('click', '.subscription', (e) => {
+			e.preventDefault();
+
+			App.changeSubscription(
+				$(e.target).closest('a').attr('data-id')
+			);
+		});
+
+		mainContent.on('click', '.mark-as-done', (e) => {
+			e.preventDefault();
+
+			App.markAsDone(
+				$(e.target).attr('data-id')
+			);
+		});
+	}
+
+	static markAsDone(libId) {
+		App.getLibraryById(libId, (err, lib) => {
+			if (err) {
+				App.error(err);
+				return false;
+			}
+
+			App.db.update({
+				_id: libId
+			}, {
+				$set: {
+					'columns.pinnedVersion': lib.columns.version
+				}
+			}, {}, (err) => {
+				if (err) {
+					App.error(err);
+					return false;
+				}
+
+				$('.' + libId).removeClass('updated');
+				$('.mark-as-done').remove();
+				$('.pinned-version').remove();
+			});
+		});
+	}
+
+	static changeSubscription(libId) {
+		App.getLibraryById(libId, (err, lib) => {
+			let isSubscribed = lib.columns.isSubscribed,
+				libEl = $('.' + libId),
+				subscriptionEl = libEl.find('.subscription');
+
+			if (err) {
+				App.error(err);
+				return false;
+			}
+
+			App.updateLibSubscription(lib, isSubscribed ? 0 : 1, (err) => {
+				if (err) {
+					App.error(err);
+					return false;
+				}
+
+				if (isSubscribed) {
+					libEl.removeClass('subscribed');
+					libEl.removeClass('updated');
+					subscriptionEl.text('Subscribe');
+				} else {
+					libEl.addClass('subscribed');
+					subscriptionEl.text('Unsubscribe');
+				}
+			});
+		});
+	}
+
+	static updateLibSubscription(lib, isSubscribed, callback) {
+		App.db.update({
+			_id: lib._id
+		}, {
+			$set: {
+				'columns.isSubscribed': isSubscribed,
+				'columns.pinnedVersion': isSubscribed ? lib.columns.pinnedVersion : lib.columns.version
+			}
+		}, {}, callback);
+	}
+
+	static showLibContent(libId) {
+		App.getLibraryById(libId, (err, lib) => {
+			let markAsDone = '',
+				yourVersion = '',
+				content = $('.main-content');
+
+			if (err) {
+				App.error(err);
+				return false;
+			}
+
+			if (lib.columns.version != lib.columns.pinnedVersion) {
+				markAsDone = ' <a href="#" class="btn btn-success btn-xs mark-as-done" data-id="' + libId + '">Mark as Done</a>';
+				yourVersion = '<p class="pinned-version"><span class="text-muted">Your Version:</span> ' + lib.columns.pinnedVersion + '</p>';
+			}
+
+			content.html(
+				'<h2>' + lib.columns.name + markAsDone + '</h2>' +
+				'<p><span class="text-muted">Vendor:</span> ' + lib.columns.author + '</p>' +
+				yourVersion +
+				'<p><span class="text-muted">Latest Version:</span> ' + lib.columns.version + '</p>' +
+				'<p><span class="text-muted">Url:</span> <a href="' + lib.columns.url + '" target="_blank">' + lib.columns.name + '</a></p>'
+			);
+		});
+	}
+
+	static getLibraryById(libId, callback) {
+		App.db.findOne({
+			_id: libId
+		}, callback);
+	}
+
+	static getAllLibraries(callback) {
+		App.log('> select libraries from db');
+
+		App.db.find({}).sort({
+			'columns.isSubscribed': -1
+		}).exec(callback);
+	}
+
+	static searchLibraries(name, callback) {
+		App.log('> searching libraries by', name);
+
+		if (name == '') {
+			App.getAllLibraries(callback);
 			return false;
 		}
 
-		emitter.trigger('progress', libs.length);
+		App.db.find({
+			'columns.name': new RegExp(name, 'gi')
+		}).sort({
+			'columns.isSubscribed': -1
+		}).exec(callback);
+	}
+
+	static drawLibraries(libs) {
+		App.log('> drawing libraries');
+
+		let libraries = $('.libraries .list-group');
+
+		libraries.html('');
 
 		if (libs.length) {
-			for (var i in libs) {
+			for (let i in libs) {
 				if (libs.hasOwnProperty(i)) {
-					fetchUpdate(libs[i]);
+					let id = libs[i]._id,
+						additionalClasses = id,
+						version = libs[i].columns.version,
+						updated = '',
+						subscribe = '';
+
+					if (!initialStart) {
+						if (version != libs[i].columns.pinnedVersion) {
+							additionalClasses += ' updated';
+						}
+					}
+
+					if (libs[i].columns.isSubscribed) {
+						additionalClasses += ' subscribed';
+						subscribe = 'Unsubscribe';
+					} else {
+						subscribe = 'Subscribe';
+					}
+
+					libraries.append(
+						'<a href="#' + id + '" class="list-group-item ' + additionalClasses + '" data-id="' + id + '">' +
+						'<button class="badge subscription btn btn-success hide">' + subscribe + '</button> ' +
+						'<span class="badge version">' + version + '</span> ' +
+						libs[i].columns.name +
+						'</a>'
+					);
 				}
 			}
 		}
-	});
-}
+	}
 
-function fetchUpdate(item) {
-	console.log('> fetching update for', item.uuid, 'with id', item._id);
+	static getSchemas(callback) {
+		readFiles(__dirname + '/schemas/', (schemas) => {
+			let asyncLoop = require('node-async-loop');
 
-	var schema = require('./schemas/' + item.uuid + '.js');
-	var request = require("request");
+			asyncLoop(schemas, (schema, next) => {
+				App.db.insert(schema, (err, lib) => {
+					if (err) {
+						App.error(err);
+						return false;
+					}
 
-	request(item.versionUrl, function(err, response, body) {
-		if (err || response.statusCode != 200) {
-			console.log('%c >>> Error ', colorize, err, response);
-			return false;
-		}
+					App.log('> Insert.', lib);
+					next();
+				});
+			}, (err) => {
+				if (err) {
+					App.error(err);
+					return false;
+				}
 
-		var version = schema.sch.parseVersion(body);
-
-		if (version !== false) {
-			if (item.columns.version != version) {
-				updateVersion(item, version);
-			} else {
-				console.log('> There is no update for', item.uuid);
-			}
-		} else {
-			console.log('%c >>> Error ', colorize, 'cannot parse version for', item.uuid);
-		}
-
-		emitter.trigger('progress');
-	});
-}
-
-function updateVersion(item, version) {
-	console.log('> updating version of', item.uuid, 'to', version);
-
-	db.update({
-		_id: item._id
-	}, {
-		$set: {
-			'columns.version': version,
-			'columns.pinnedVersion': item.columns.isSubscribed ? item.columns.pinnedVersion : version
-		}
-	}, {}, function (err, numReplaced) {
-		if (err) {
-			console.log('%c >>> Error ', colorize, err);
-			return false;
-		}
-
-		console.log('>', item.uuid, 'updated in db from', item.columns.version, 'to', version);
-
-		emitter.trigger('version-updated', {
-			item: item,
-			version: version
+				callback();
+			});
 		});
-	});
+	}
+
+	static readFiles(dirname, onSuccess) {
+		var schemaList = [];
+
+		App.fs.readdir(dirname, (err, filenames) => {
+			if (err) {
+				App.error(err);
+				return;
+			}
+
+			filenames.forEach((filename) => {
+				var schemaModule = require(dirname + filename);
+
+				schemaList.push(schemaModule.sch);
+			});
+
+			onSuccess(schemaList);
+		});
+	}
+
+	static fetchUpdates() {
+		App.log('> fetching updates');
+
+		App.getAllLibraries((err, libs) => {
+			if (err) {
+				App.log(err);
+				return false;
+			}
+
+			App.emitter.trigger('progress', libs.length);
+
+			if (libs.length) {
+				for (var i in libs) {
+					if (libs.hasOwnProperty(i)) {
+						App.fetchUpdate(libs[i]);
+					}
+				}
+			}
+		});
+	}
+
+	static fetchUpdate(item) {
+		App.log('> fetching update for', item.uuid, 'with id', item._id);
+
+		var schema = require('./schemas/' + item.uuid + '.js');
+		var request = require("request");
+
+		request(item.versionUrl, (err, response, body) => {
+			if (err || response.statusCode != 200) {
+				App.log(err);
+				return false;
+			}
+
+			var version = schema.sch.parseVersion(body);
+
+			if (version !== false) {
+				if (item.columns.version != version) {
+					App.updateVersion(item, version);
+				} else {
+					App.log('> There is no update for', item.uuid);
+				}
+			} else {
+				App.log('%c >>> Error ', colorize, 'cannot parse version for', item.uuid);
+			}
+
+			App.emitter.trigger('progress');
+		});
+	}
+
+	static updateVersion(item, version) {
+		App.log('> updating version of', item.uuid, 'to', version);
+
+		App.db.update({
+			_id: item._id
+		}, {
+			$set: {
+				'columns.version': version,
+				'columns.pinnedVersion': item.columns.isSubscribed ? item.columns.pinnedVersion : version
+			}
+		}, {}, (err) => {
+			if (err) {
+				App.log(err);
+				return false;
+			}
+
+			App.log('>', item.uuid, 'updated in db from', item.columns.version, 'to', version);
+
+			App.emitter.trigger('version-updated', {
+				item: item,
+				version: version
+			});
+		});
+	}
+
+	static log(message) {
+		console.log(message);
+	}
+
+	static error(message) {
+		console.log('%c >>> Error ', colorize, message);
+	}
 }
+
+module.exports = App;

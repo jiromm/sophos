@@ -53,39 +53,43 @@
 </body>
 
 <script>
-	var fs = require('fs');
-	var $ = require('jquery');
-	var Sister = require('sister');
-	var NProgress = require('nprogress');
-	var emitter = Sister();
-	var initialStart = false;
-	var progress = {
-		total: 0,
-		status: 0
-	};
-	var colorize = 'background: red; color: white';
+	let App = require('./app.js');
 
-	window.jQuery = $;
-	NProgress.configure({
-		showSpinner: false
-	});
-
-	require('bootstrap');
-	require('./app.js');
-	require('./renderer.js');
-
-	var Datastore = require('nedb'),
-		db = new Datastore({
-		filename: __dirname + '/db/sophos.db'
-	});
-	db.loadDatabase(function(err) {
-		if (err) {
-			console.error('%c >>> Error ', colorize, err);
-			return false;
-		}
-
-		console.log('> nedb loaded');
-		emitter.trigger('db-ready');
-	});
+	let app = new App();
+	app.run();
+//	var fs = require('fs');
+//	var $ = require('jquery');
+//	var Sister = require('sister');
+//	var NProgress = require('nprogress');
+//	var emitter = Sister();
+//	var initialStart = false;
+//	var progress = {
+//		total: 0,
+//		status: 0
+//	};
+//	var colorize = 'background: red; color: white';
+//
+//	window.jQuery = $;
+//	NProgress.configure({
+//		showSpinner: false
+//	});
+//
+//	require('bootstrap');
+//	require('./app.js');
+//	require('./renderer.js');
+//
+//	var Datastore = require('nedb'),
+//		db = new Datastore({
+//		filename: __dirname + '/db/sophos.db'
+//	});
+//	db.loadDatabase(function(err) {
+//		if (err) {
+//			console.error('%c >>> Error ', colorize, err);
+//			return false;
+//		}
+//
+//		console.log('> nedb loaded');
+//		emitter.trigger('db-ready');
+//	});
 </script>
 </html>
