@@ -99,13 +99,9 @@ class App {
 		});
 
 		this.emitter.on('progress', (total) => {
-			let updateBtn = $('.update-versions');
-
 			if (total) {
 				that.progress.total = total;
 				that.NProgress.start();
-
-				updateBtn.button('loading');
 			} else {
 				that.NProgress.set(1 / that.progress.total);
 				that.progress.status++;
@@ -115,7 +111,7 @@ class App {
 				that.NProgress.done();
 				that.progress.status = 0;
 
-				updateBtn.button('reset');
+				$('.update-versions').button('reset');
 			}
 		});
 
@@ -393,6 +389,8 @@ class App {
 		var that = this;
 
 		this.log('> fetching updates');
+
+		$('.update-versions').button('loading');
 
 		this.getAllLibraries((err, libs) => {
 			if (err) {
