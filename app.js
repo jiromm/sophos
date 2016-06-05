@@ -21,9 +21,14 @@ class App {
 		});
 
 		this.emitter = this.Sister();
-		this.db = new this.Datastore({
-			filename: __dirname + '/db/sophos.db'
-		});
+		this.db = {
+			libs: new this.Datastore({
+				filename: __dirname + '/db/libs.db'
+			}),
+			changelogs: new this.Datastore({
+				filename: __dirname + '/db/changelogs.db'
+			})
+		};
 
 		this.initialStart = false;
 		this.progress = {
@@ -39,7 +44,7 @@ class App {
 	run() {
 		let that = this;
 
-		this.db.loadDatabase((err) => {
+		this.db.libs.loadDatabase((err) => {
 			if (err) {
 				that.error(err);
 				return false;
@@ -178,7 +183,7 @@ class App {
 				return false;
 			}
 
-			that.db.update({
+			that.db.libs.update({
 				_id: libId
 			}, {
 				$set: {
@@ -229,7 +234,7 @@ class App {
 	}
 
 	updateLibSubscription(lib, isSubscribed, callback) {
-		this.db.update({
+		this.db.libs.update({
 			_id: lib._id
 		}, {
 			$set: {
@@ -268,7 +273,7 @@ class App {
 	}
 
 	getLibraryById(libId, callback) {
-		this.db.findOne({
+		this.db.libs.findOne({
 			_id: libId
 		}, callback);
 	}
@@ -276,7 +281,7 @@ class App {
 	getAllLibraries(callback) {
 		this.log('> select libraries from db');
 
-		this.db.find({}).sort({
+		this.db.libs.find({}).sort({
 			'columns.isSubscribed': -1
 		}).exec(callback);
 	}
@@ -289,7 +294,7 @@ class App {
 			return false;
 		}
 
-		this.db.find({
+		this.db.libs.find({
 			'columns.name': new RegExp(name, 'gi')
 		}).sort({
 			'columns.isSubscribed': -1
@@ -345,7 +350,7 @@ class App {
 			let asyncLoop = require('node-async-loop');
 
 			asyncLoop(schemas, (schema, next) => {
-				that.db.insert(schema, (err, lib) => {
+				that.db.libs.insert(schema, (err, lib) => {
 					if (err) {
 						that.error(err);
 						return false;
@@ -444,7 +449,7 @@ class App {
 
 		this.log('> updating version of', item.uuid, 'to', version);
 
-		this.db.update({
+		this.db.libs.update({
 			_id: item._id
 		}, {
 			$set: {
@@ -464,6 +469,10 @@ class App {
 				version: version
 			});
 		});
+	}
+
+	filterGithubRelease(releases) {
+
 	}
 
 	log(...message) {
