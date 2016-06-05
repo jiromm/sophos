@@ -9,6 +9,7 @@ class App {
 	loadPackages() {
 		this.fs = require('fs');
 		this.Sister = require('sister');
+		this.request = require('request');
 		this.NProgress = require('nprogress');
 		this.Datastore = require('nedb');
 
@@ -30,6 +31,7 @@ class App {
 			})
 		};
 
+		this.changelogItems = [];
 		this.initialStart = false;
 		this.progress = {
 			total: 0,
@@ -114,6 +116,7 @@ class App {
 
 			if (that.progress.total == that.progress.status) {
 				that.NProgress.done();
+				that.fetchChangelogs();
 				that.progress.status = 0;
 
 				$('.update-versions').button('reset');
@@ -418,11 +421,10 @@ class App {
 	fetchUpdate(item) {
 		this.log('> fetching update for', item.uuid, 'with id', item._id);
 
-		var schema = require('./schemas/' + item.uuid + '.js'),
-			request = require("request"),
+		let schema = require('./schemas/' + item.uuid + '.js'),
 			that = this;
 
-		request(item.versionUrl, (err, response, body) => {
+		this.request(item.versionUrl, (err, response, body) => {
 			if (err || response.statusCode != 200) {
 				that.log(err);
 				return false;
@@ -469,14 +471,59 @@ class App {
 				version: version
 			});
 		});
+
+		this.prepareForChangelog(item);
 	}
 
-	filterGithubRelease(releases) {
+	prepareForChangelog(item) {
+		this.changelogItems[item.uuid] = {
+			uuid: item.uuid,
+			changelog: item.changelog
+		};
+	}
 
+	fetchChangelogs() {
+		this.log('> Trying to fetch changelog(s) for', this.changelogItems.length, 'libs');
+
+		for (var i in this.changelogItems) {
+			if (this.changelogItems.hasOwnProperty(i)) {
+				let item = this.changelogItems[i];
+
+				if (item.changelog !== false) {
+					if (item.changelog.isGithubRelease) {
+						this.handleGithubRelease(item, i);
+					}
+				} else {
+					this.log('We don\'t have changelog schema for', item.uuid);
+				}
+			}
+		}
+	}
+
+	handleGithubRelease(item, changelogItemIndex) {
+		let that = this,
+			options = {
+				url: item.changelog.releaseUrl,
+				headers: {
+					'User-Agent': 'Sophos v0.2.1 @ https://github.com/jiromm/sophos'
+				}
+			};
+
+		this.request(options, (err, response, body) => {
+			if (err || response.statusCode != 200) {
+				that.log(err);
+				console.log(response);
+				return false;
+			}
+
+			console.log(body);
+
+			// remove by changelogItemIndex
+		});
 	}
 
 	log(...message) {
-		console.log(message);
+		console.log(message.join(' '));
 	}
 
 	error(message) {
