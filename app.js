@@ -471,7 +471,7 @@ class App {
 	}
 
 	error(message) {
-		console.log('%c >>> Error ', colorize, message);
+		console.log('%c >>> Error ', 'background: red; color: white', message);
 	}
 }
 
