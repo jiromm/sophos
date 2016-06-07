@@ -260,27 +260,51 @@ class App {
 		let that = this;
 
 		this.getLibraryById(libId, (err, lib) => {
-			let markAsDone = '',
-				yourVersion = '',
-				content = $('.main-content');
-
 			if (err) {
 				that.error(err);
 				return false;
 			}
 
-			if (lib.columns.version != lib.columns.pinnedVersion) {
-				markAsDone = ' <a href="#" class="btn btn-success btn-xs mark-as-done" data-id="' + libId + '">Mark as Done</a>';
-				yourVersion = '<p class="pinned-version"><span class="text-muted">Your Version:</span> ' + lib.columns.pinnedVersion + '</p>';
-			}
+			that.getChangelogs(lib.uuid, (err, changelogs) => {
+				if (err) {
+					that.error(err);
+					return false;
+				}
 
-			content.html(
-				'<h2>' + lib.columns.name + markAsDone + '</h2>' +
-				'<p><span class="text-muted">Vendor:</span> ' + lib.columns.author + '</p>' +
-				yourVersion +
-				'<p><span class="text-muted">Latest Version:</span> ' + lib.columns.version + '</p>' +
-				'<p><span class="text-muted">Url:</span> <a href="' + lib.columns.url + '" target="_blank">' + lib.columns.name + '</a></p>'
-			);
+				that.log('>', changelogs.length, 'changelogs has been found. Trying to draw');
+
+				let markAsDone = '',
+					yourVersion = '',
+					changelogHtml = '',
+					content = $('.main-content');
+
+				if (lib.columns.version != lib.columns.pinnedVersion) {
+					markAsDone = ' <a href="#" class="btn btn-success btn-xs mark-as-done" data-id="' + libId + '">Mark as Done</a>';
+					yourVersion = '<p class="pinned-version"><span class="text-muted">Your Version:</span> ' + lib.columns.pinnedVersion + '</p>';
+				}
+
+				if (changelogs.length) {
+					for (let i in changelogs) {
+						if (changelogs.hasOwnProperty(i)) {
+							changelogHtml += '<h3>' + changelogs[i].version + '</h3>';
+							changelogHtml += '<p>Body: <strong>' + changelogs[i].body + '</strong></p>';
+							console.log(i);
+						}
+					}
+				}
+
+				console.log(changelogHtml);
+
+				content.html(
+					'<h1>' + lib.columns.name + markAsDone + '</h1>' +
+					'<p><span class="text-muted">Vendor:</span> ' + lib.columns.author + '</p>' +
+					yourVersion +
+					'<p><span class="text-muted">Latest Version:</span> ' + lib.columns.version + '</p>' +
+					'<p><span class="text-muted">Url:</span> <a href="' + lib.columns.url + '" target="_blank">' + lib.columns.name + '</a></p>' +
+					'<h2>Changelog</h2>' +
+					changelogHtml
+				);
+			});
 		});
 	}
 
@@ -310,6 +334,16 @@ class App {
 			'columns.name': new RegExp(name, 'gi')
 		}).sort({
 			'columns.isSubscribed': -1
+		}).exec(callback);
+	}
+
+	getChangelogs(uuid, callback) {
+		this.log('> select changelog from db for', uuid);
+
+		this.db.changelogs.find({
+			uuid: uuid
+		}).sort({
+			published_at: -1
 		}).exec(callback);
 	}
 
@@ -540,7 +574,7 @@ class App {
 						return false;
 					}
 
-					that.log('> Changelog Insert.', lib);
+					that.log('> Changelog Insert.', lib.length, 'objects');
 				});
 			});
 		});
@@ -560,7 +594,7 @@ class App {
 						html_url: releases[i].html_url,
 						tag_name: releases[i].tag_name,
 						version: releases[i].name,
-						published_at: releases[i].published_at,
+						published_at: new Date(releases[i].published_at),
 						body: releases[i].body,
 						author_login: releases[i].author.login,
 						author_avatar: releases[i].author.avatar_url,
