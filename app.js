@@ -52,8 +52,17 @@ class App {
 				return false;
 			}
 
-			this.log('> nedb loaded');
-			that.emitter.trigger('db-ready');
+			this.log('> nedb libs loaded');
+
+			that.db.changelogs.loadDatabase((err) => {
+				if (err) {
+					that.error(err);
+					return false;
+				}
+
+				that.log('> nedb changelogs loaded');
+				that.emitter.trigger('db-ready');
+			});
 		});
 	}
 
@@ -485,7 +494,7 @@ class App {
 	fetchChangelogs() {
 		this.log('> Trying to fetch changelog(s) for', this.changelogItems.length, 'libs');
 
-		for (var i in this.changelogItems) {
+		for (let i in this.changelogItems) {
 			if (this.changelogItems.hasOwnProperty(i)) {
 				let item = this.changelogItems[i];
 
@@ -512,14 +521,56 @@ class App {
 		this.request(options, (err, response, body) => {
 			if (err || response.statusCode != 200) {
 				that.log(err);
-				console.log(response);
 				return false;
 			}
 
-			console.log(body);
+			// Remove changelog Item from archive, to prevent double fetch
+			that.changelogItems.splice(changelogItemIndex, 1);
 
-			// remove by changelogItemIndex
+			that.separateGithubReleaseItems(body, item.uuid, (changelogItems) => {
+				that.log('> Removing changelogs for.', item.uuid);
+				that.db.changelogs.remove({
+					uuid: item.uuid
+				});
+
+				that.log('> Inserting changelogs for.', item.uuid);
+				that.db.changelogs.insert(changelogItems, (err, lib) => {
+					if (err) {
+						that.error(err);
+						return false;
+					}
+
+					that.log('> Changelog Insert.', lib);
+				});
+			});
 		});
+	}
+
+	separateGithubReleaseItems(releases, uuid, callback) {
+		let releaseList = [];
+
+		releases = JSON.parse(releases);
+
+		if (releases.length) {
+			for (let i in releases) {
+				if (releases.hasOwnProperty(i)) {
+					console.log(releases[i].author);
+					releaseList.push({
+						uuid: uuid,
+						html_url: releases[i].html_url,
+						tag_name: releases[i].tag_name,
+						version: releases[i].name,
+						published_at: releases[i].published_at,
+						body: releases[i].body,
+						author_login: releases[i].author.login,
+						author_avatar: releases[i].author.avatar_url,
+						author_url: releases[i].author.url,
+					});
+				}
+			}
+
+			callback(releaseList);
+		}
 	}
 
 	log(...message) {
