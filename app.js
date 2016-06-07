@@ -305,7 +305,7 @@ class App {
 										'<img src="' + changelogs[i].author_avatar + '" width="18" height="18">' +
 										' <span class="label label-default">' + changelogs[i].author_login + '</span>' +
 									'</a> released this on' +
-									' <strong>' + (new Date(changelogs[i].published_at)).toLocaleString("en-US", {}) + '</strong>' +
+									' <strong>' + (new Date(changelogs[i].published_at)).toLocaleString("hy-AM") + '</strong>' +
 								'</span>' +
 								' <a href="' + changelogs[i].html_url + '" target="_blank" class="btn btn-xs btn-default pull-right">Open</a>' +
 							'</p>';
