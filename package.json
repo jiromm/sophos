@@ -1,38 +1,39 @@
 {
-    "name": "sophos",
-    "version": "0.1.0",
-    "description": "Sophos. The app who knows everything",
-    "main": "main.js",
-    "scripts": {
-        "start": "electron main.js"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/jiromm/sophos.git"
-    },
-    "keywords": [
-        "Electron",
-        "sophos",
-        "library",
-        "update"
-    ],
-    "author": "Aram Baghdasaryan <xquack@gmail.com>",
-    "license": "CC0-1.0",
-    "bugs": {
-        "url": "https://github.com/jiromm/sophos/issues"
-    },
-    "homepage": "https://github.com/jiromm/sophos",
-    "devDependencies": {
-        "electron-prebuilt": "^1.0.1"
-    },
-    "dependencies": {
-        "bootstrap": "^3.3.6",
-        "fs": "0.0.2",
-        "jquery": "^2.2.4",
-        "nedb": "^1.8.0",
-        "node-async-loop": "^1.2.1",
-        "nprogress": "^0.2.0",
-        "request": "^2.72.0",
-        "sister": "^3.0.0"
-    }
+  "name": "sophos",
+  "version": "0.1.0",
+  "description": "Sophos. The app who knows everything",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jiromm/sophos.git"
+  },
+  "keywords": [
+    "Electron",
+    "sophos",
+    "library",
+    "update"
+  ],
+  "author": "Aram Baghdasaryan <xquack@gmail.com>",
+  "license": "CC0-1.0",
+  "bugs": {
+    "url": "https://github.com/jiromm/sophos/issues"
+  },
+  "homepage": "https://github.com/jiromm/sophos",
+  "devDependencies": {
+    "electron-prebuilt": "^1.0.1"
+  },
+  "dependencies": {
+    "bootstrap": "^3.3.6",
+    "fs": "0.0.2",
+    "jquery": "^2.2.4",
+    "marked": "^0.3.5",
+    "nedb": "^1.8.0",
+    "node-async-loop": "^1.2.1",
+    "nprogress": "^0.2.0",
+    "request": "^2.72.0",
+    "sister": "^3.0.0"
+  }
 }

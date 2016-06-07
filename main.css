@@ -148,3 +148,9 @@ aside {
 .libraries a:not(.subscribed) .subscription {
 	background: #5cb85c !important;
 }
+.text-bottom {
+	vertical-align: text-bottom;
+}
+.text-bottom a {
+	text-decoration: none;
+}

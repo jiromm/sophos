@@ -12,6 +12,7 @@ class App {
 		this.request = require('request');
 		this.NProgress = require('nprogress');
 		this.Datastore = require('nedb');
+		this.marked = require('marked');
 
 		require('bootstrap');
 	}
@@ -30,6 +31,17 @@ class App {
 				filename: __dirname + '/db/changelogs.db'
 			})
 		};
+
+		this.marked.setOptions({
+			renderer: new this.marked.Renderer(),
+			gfm: true,
+			tables: true,
+			breaks: true,
+			pedantic: true,
+			sanitize: true,
+			smartLists: true,
+			smartypants: true
+		});
 
 		this.changelogItems = [];
 		this.initialStart = false;
@@ -286,14 +298,21 @@ class App {
 				if (changelogs.length) {
 					for (let i in changelogs) {
 						if (changelogs.hasOwnProperty(i)) {
-							changelogHtml += '<h3>' + changelogs[i].version + '</h3>';
-							changelogHtml += '<p>Body: <strong>' + changelogs[i].body + '</strong></p>';
-							console.log(i);
+							changelogHtml += '<p class="text-muted">' +
+								'<big><big>' + changelogs[i].version + '</big></big>' +
+								'<span class="text-bottom">' +
+									' <a href="' + changelogs[i].author_url + '" target="_blank">' +
+										'<img src="' + changelogs[i].author_avatar + '" width="18" height="18">' +
+										' <span class="label label-default">' + changelogs[i].author_login + '</span>' +
+									'</a> released this on' +
+									' <strong>' + (new Date(changelogs[i].published_at)).toLocaleString("en-US", {}) + '</strong>' +
+								'</span>' +
+								' <a href="' + changelogs[i].html_url + '" target="_blank" class="btn btn-xs btn-default pull-right">Open</a>' +
+							'</p>';
+							changelogHtml += '<p>' + that.marked(changelogs[i].body) + '</p>';
 						}
 					}
 				}
-
-				console.log(changelogHtml);
 
 				content.html(
 					'<h1>' + lib.columns.name + markAsDone + '</h1>' +
@@ -588,7 +607,6 @@ class App {
 		if (releases.length) {
 			for (let i in releases) {
 				if (releases.hasOwnProperty(i)) {
-					console.log(releases[i].author);
 					releaseList.push({
 						uuid: uuid,
 						html_url: releases[i].html_url,
@@ -598,7 +616,7 @@ class App {
 						body: releases[i].body,
 						author_login: releases[i].author.login,
 						author_avatar: releases[i].author.avatar_url,
-						author_url: releases[i].author.url,
+						author_url: releases[i].author.html_url,
 					});
 				}
 			}
