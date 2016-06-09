@@ -26,5 +26,9 @@ exports.sch = {
 		}
 
 		return false;
+	},
+	changelog: {
+		isGithubRelease: true,
+		releaseUrl: 'https://api.github.com/repos/twbs/bootstrap/releases'
 	}
 };
