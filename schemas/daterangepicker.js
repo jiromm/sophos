@@ -9,7 +9,7 @@ exports.sch = {
 		isSubscribed: 0
 	},
 	versionUrl: 'https://raw.githubusercontent.com/dangrossman/bootstrap-daterangepicker/master/package.json',
-	parseVersion: function(body) { return Math.random();
+	parseVersion: function(body) {
 		var re = /"version": "(\d+\.\d+\.\d+)"/gi;
 		var m;
 
