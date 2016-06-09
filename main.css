@@ -154,3 +154,7 @@ aside {
 .text-bottom a {
 	text-decoration: none;
 }
+.changelog-version {
+	padding-right: 8px;
+	font-size: 22px;
+}

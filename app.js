@@ -299,7 +299,7 @@ class App {
 					for (let i in changelogs) {
 						if (changelogs.hasOwnProperty(i)) {
 							changelogHtml += '<p class="text-muted">' +
-								'<big><big>' + changelogs[i].version + '</big></big>' +
+								'<span class="changelog-version text-primary">' + changelogs[i].version + '</span>' +
 								'<span class="text-bottom">' +
 									' <a href="' + changelogs[i].author_url + '" target="_blank">' +
 										'<img src="' + changelogs[i].author_avatar + '" width="18" height="18">' +
@@ -538,6 +538,8 @@ class App {
 	}
 
 	prepareForChangelog(item) {
+		this.log('> Preparing to fetch changelog for', item.uuid);
+
 		this.changelogItems[item.uuid] = {
 			uuid: item.uuid,
 			changelog: item.changelog
@@ -545,7 +547,7 @@ class App {
 	}
 
 	fetchChangelogs() {
-		this.log('> Trying to fetch changelog(s) for', this.changelogItems.length, 'libs');
+		this.log('> Trying to fetch changelogs');
 
 		for (let i in this.changelogItems) {
 			if (this.changelogItems.hasOwnProperty(i)) {
