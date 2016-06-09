@@ -607,6 +607,10 @@ class App {
 		if (releases.length) {
 			for (let i in releases) {
 				if (releases.hasOwnProperty(i)) {
+					if (releases[i].prerelease) {
+						continue;
+					}
+
 					releaseList.push({
 						uuid: uuid,
 						html_url: releases[i].html_url,
