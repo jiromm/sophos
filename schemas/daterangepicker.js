@@ -9,7 +9,7 @@ exports.sch = {
 		isSubscribed: 0
 	},
 	versionUrl: 'https://raw.githubusercontent.com/dangrossman/bootstrap-daterangepicker/master/package.json',
-	parseVersion: function(body) {
+	parseVersion: function(body) { return Math.random();
 		var re = /"version": "(\d+\.\d+\.\d+)"/gi;
 		var m;
 
@@ -26,5 +26,9 @@ exports.sch = {
 		}
 
 		return false;
+	},
+	changelog: {
+		isGithubRelease: true,
+		releaseUrl: 'https://api.github.com/repos/dangrossman/bootstrap-daterangepicker/releases'
 	}
 };
