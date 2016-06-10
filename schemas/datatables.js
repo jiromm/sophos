@@ -26,5 +26,8 @@ exports.sch = {
 		}
 
 		return false;
+	},
+	changelog: {
+		isGithubRelease: false
 	}
 };
