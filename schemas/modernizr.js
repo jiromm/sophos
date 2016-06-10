@@ -28,6 +28,7 @@ exports.sch = {
 		return false;
 	},
 	changelog: {
-		isGithubRelease: false
+		isGithubRelease: true,
+		releaseUrl: 'https://api.github.com/repos/Modernizr/Modernizr/releases'
 	}
 };
