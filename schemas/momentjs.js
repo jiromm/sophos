@@ -28,6 +28,8 @@ exports.sch = {
 		return false;
 	},
 	changelog: {
-		isGithubRelease: false
+		isGithubRelease: false,
+		isGithubChangelog: true,
+		changelogUrl: 'https://raw.githubusercontent.com/moment/moment/master/CHANGELOG.md'
 	}
 };
