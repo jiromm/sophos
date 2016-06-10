@@ -421,7 +421,7 @@ class App {
 						return false;
 					}
 
-					that.log('> Insert.', lib);
+					that.log('> Schema insert for', schema.uuid);
 					next();
 				});
 			}, (err) => {
@@ -616,8 +616,7 @@ class App {
 					releaseList.push({
 						uuid: uuid,
 						html_url: releases[i].html_url,
-						tag_name: releases[i].tag_name,
-						version: releases[i].name,
+						version: releases[i].tag_name,
 						published_at: new Date(releases[i].published_at),
 						body: releases[i].body,
 						author_login: releases[i].author.login,
