@@ -298,14 +298,30 @@ class App {
 				if (changelogs.length) {
 					for (let i in changelogs) {
 						if (changelogs.hasOwnProperty(i)) {
+							let author = '';
+
+							if (
+								changelogs[i].author_url &&
+								changelogs[i].author_avatar &&
+								changelogs[i].author_login
+							) {
+								author = ' <a href="' + changelogs[i].author_url + '" target="_blank">';
+
+								const authorAvatar = '<img src="' + changelogs[i].author_avatar + '" width="18" height="18">';
+								const authorLogin = ' <span class="label label-default">' + changelogs[i].author_login + '</span>';
+
+								author += authorAvatar + authorLogin + '</a>';
+							}
+
+							const releasedOn = changelogs[i].published_at
+								? ' released this on <strong>' + (new Date(changelogs[i].published_at)).toLocaleString("hy-AM") + '</strong>'
+								: '';
+
 							changelogHtml += '<p class="text-muted">' +
 								'<span class="changelog-version text-primary">' + changelogs[i].version + '</span>' +
 								'<span class="text-bottom">' +
-									' <a href="' + changelogs[i].author_url + '" target="_blank">' +
-										'<img src="' + changelogs[i].author_avatar + '" width="18" height="18">' +
-										' <span class="label label-default">' + changelogs[i].author_login + '</span>' +
-									'</a> released this on' +
-									' <strong>' + (new Date(changelogs[i].published_at)).toLocaleString("hy-AM") + '</strong>' +
+									author +
+									releasedOn +
 								'</span>' +
 								' <a href="' + changelogs[i].html_url + '" target="_blank" class="btn btn-xs btn-default pull-right">Open</a>' +
 							'</p>';
@@ -362,7 +378,8 @@ class App {
 		this.db.changelogs.find({
 			uuid: uuid
 		}).sort({
-			published_at: -1
+			published_at: -1,
+			version: -1
 		}).exec(callback);
 	}
 
@@ -553,22 +570,39 @@ class App {
 			if (this.changelogItems.hasOwnProperty(i)) {
 				let item = this.changelogItems[i];
 
-				if (item.changelog !== false) {
-					if (item.changelog.isGithubRelease) {
-						this.handleGithubRelease(item, i);
-						continue;
-					}
+				this.removeExistingChangelogs(item.uuid, () => {
+					if (item.changelog !== false) {
+						if (item.changelog.isGithubRelease) {
+							this.handleGithubRelease(item, i);
+						}
 
-					if (item.changelog.isInternalHandler) {
-						this.handleByCustomHandler(item, i);
-						continue;
+						if (item.changelog.isInternalHandler) {
+							this.handleByCustomHandler(item, i);
+						}
+					} else {
+						this.log('We don\'t have changelog schema for', item.uuid);
 					}
-
-				} else {
-					this.log('We don\'t have changelog schema for', item.uuid);
-				}
+				});
 			}
 		}
+	}
+
+	removeExistingChangelogs(uuid, callback) {
+		let that = this;
+
+		this.log('> Removing changelogs for.', uuid);
+		this.db.changelogs.remove({
+			uuid: uuid
+		}, {
+			multi: true
+		}, (err, lib) => {
+			if (err) {
+				that.log(err);
+				return false;
+			}
+
+			callback();
+		});
 	}
 
 	handleByCustomHandler(item, changelogItemIndex) {
@@ -587,11 +621,6 @@ class App {
 			that.changelogItems.splice(changelogItemIndex, 1);
 
 			that.formatChangelogItems(changelogs, item.uuid, (changelogItems) => {
-				that.log('> Removing changelogs for.', item.uuid);
-				that.db.changelogs.remove({
-					uuid: item.uuid
-				});
-
 				that.log('> Inserting changelogs for.', item.uuid);
 				that.db.changelogs.insert(changelogItems, (err, lib) => {
 					if (err) {
@@ -624,11 +653,6 @@ class App {
 			that.changelogItems.splice(changelogItemIndex, 1);
 
 			that.separateGithubReleaseItems(body, item.uuid, (changelogItems) => {
-				that.log('> Removing changelogs for.', item.uuid);
-				that.db.changelogs.remove({
-					uuid: item.uuid
-				});
-
 				that.log('> Inserting changelogs for.', item.uuid);
 				that.db.changelogs.insert(changelogItems, (err, lib) => {
 					if (err) {
