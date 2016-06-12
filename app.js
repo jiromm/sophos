@@ -556,12 +556,53 @@ class App {
 				if (item.changelog !== false) {
 					if (item.changelog.isGithubRelease) {
 						this.handleGithubRelease(item, i);
+						continue;
 					}
+
+					if (item.changelog.isInternalHandler) {
+						this.handleByCustomHandler(item, i);
+						continue;
+					}
+
 				} else {
 					this.log('We don\'t have changelog schema for', item.uuid);
 				}
 			}
 		}
+	}
+
+	handleByCustomHandler(item, changelogItemIndex) {
+		var schema = require('./schemas/' + item.uuid + '.js'),
+			that = this;
+
+		this.request(item.changelog.url, (err, response, body) => {
+			if (err || response.statusCode != 200) {
+				that.log(err);
+				return false;
+			}
+
+			let changelogs = schema.sch.changelog.handle(body);
+
+			// Remove changelog Item from archive, to prevent double fetch
+			that.changelogItems.splice(changelogItemIndex, 1);
+
+			that.formatChangelogItems(changelogs, item.uuid, (changelogItems) => {
+				that.log('> Removing changelogs for.', item.uuid);
+				that.db.changelogs.remove({
+					uuid: item.uuid
+				});
+
+				that.log('> Inserting changelogs for.', item.uuid);
+				that.db.changelogs.insert(changelogItems, (err, lib) => {
+					if (err) {
+						that.error(err);
+						return false;
+					}
+
+					that.log('> Changelog Insert.', lib.length, 'objects');
+				});
+			});
+		});
 	}
 
 	handleGithubRelease(item, changelogItemIndex) {
@@ -627,6 +668,29 @@ class App {
 			}
 
 			callback(releaseList);
+		}
+	}
+
+	formatChangelogItems(changelogItems, uuid, callback) {
+		let changelogItemList = [];
+
+		if (changelogItems.length) {
+			for (let i in changelogItems) {
+				if (changelogItems.hasOwnProperty(i)) {
+					changelogItemList.push({
+						uuid: uuid,
+						html_url: changelogItems[i].html_url,
+						version: changelogItems[i].version,
+						published_at: false,
+						body: changelogItems[i].content,
+						author_login: false,
+						author_avatar: false,
+						author_url: false,
+					});
+				}
+			}
+
+			callback(changelogItemList);
 		}
 	}
 
