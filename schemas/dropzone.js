@@ -9,9 +9,9 @@ exports.sch = {
 		isSubscribed: 0
 	},
 	versionUrl: 'https://raw.githubusercontent.com/enyo/dropzone/master/package.json',
-	parseVersion: function(body) {
-		var re = /"version": "(\d+\.\d+\.\d+)"/gi;
-		var m;
+	parseVersion: (body) => {
+		let re = /"version": "(\d+\.\d+\.\d+)"/gi,
+			m;
 
 		while ((m = re.exec(body)) !== null) {
 			if (m.index === re.lastIndex) {

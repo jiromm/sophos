@@ -9,9 +9,9 @@ exports.sch = {
 		isSubscribed: 0
 	},
 	versionUrl: 'http://getbootstrap.com/',
-	parseVersion: function(body) {
-		var re = /Currently v(3\.\d+\.\d+)/gi;
-		var m;
+	parseVersion: (body) => {
+		let re = /Currently v(3\.\d+\.\d+)/gi,
+			m;
 
 		while ((m = re.exec(body)) !== null) {
 			if (m.index === re.lastIndex) {

@@ -9,9 +9,9 @@ exports.sch = {
 		isSubscribed: 0
 	},
 	versionUrl: 'http://jqueryvalidation.org/',
-	parseVersion: function(body) {
-		var re = /Current version:<\/strong> (\d+\.\d+\.\d+)/gi;
-		var m;
+	parseVersion: (body) => {
+		let re = /Current version:<\/strong> (\d+\.\d+\.\d+)/gi,
+			m;
 
 		while ((m = re.exec(body)) !== null) {
 			if (m.index === re.lastIndex) {

@@ -10,8 +10,8 @@ exports.sch = {
 	},
 	versionUrl: 'https://raw.githubusercontent.com/moment/moment/develop/package.json',
 	parseVersion: (body) => {
-		var re = /"version": "(\d+\.\d+\.\d+)"/gi;
-		var m;
+		let re = /"version": "(\d+\.\d+\.\d+)"/gi,
+			m;
 
 		while ((m = re.exec(body)) !== null) {
 			if (m.index === re.lastIndex) {

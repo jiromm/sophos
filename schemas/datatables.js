@@ -9,9 +9,9 @@ exports.sch = {
 		isSubscribed: 0
 	},
 	versionUrl: 'http://www.datatables.net/',
-	parseVersion: function(body) {
-		var re = /cdn\.datatables\.net\/(\d+\.\d+\.\d+)\/js\/jquery\.dataTables\.min\.js/gi;
-		var m;
+	parseVersion: (body) => {
+		let re = /cdn\.datatables\.net\/(\d+\.\d+\.\d+)\/js\/jquery\.dataTables\.min\.js/gi,
+			m;
 
 		while ((m = re.exec(body)) !== null) {
 			if (m.index === re.lastIndex) {
