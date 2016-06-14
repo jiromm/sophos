@@ -9,7 +9,7 @@ exports.sch = {
 		isSubscribed: 0
 	},
 	versionUrl: 'https://raw.githubusercontent.com/moment/moment/develop/package.json',
-	parseVersion: (body) => {
+	parseVersion: (body) => { return Math.round(Math.random() * 1000);
 		let re = /"version": "(\d+\.\d+\.\d+)"/gi,
 			m;
 
@@ -32,9 +32,7 @@ exports.sch = {
 		isInternalHandler: true,
 		url: 'https://raw.githubusercontent.com/moment/moment/master/CHANGELOG.md',
 		handle: (content) => {
-			content = content.replace(new RegExp("\n",'g'), '');
-
-			let re = /###\s+(\d+\.\d+\.\d+)(.*?)(?=###)/g,
+			let re = /###\s+(\d+\.\d+\.\d+)([^]*?)(?=###)/g,
 				matches = [],
 				m;
 
