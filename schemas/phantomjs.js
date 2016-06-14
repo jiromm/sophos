@@ -9,7 +9,7 @@ exports.sch = {
 		isSubscribed: 0
 	},
 	versionUrl: 'http://phantomjs.org/download.html',
-	parseVersion: (body) => { return Math.round(Math.random() * 1000);
+	parseVersion: (body) => {
 		let re = /phantomjs-(\d+\.\d+\.\d+)/gi,
 			m;
 
