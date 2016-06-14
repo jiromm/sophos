@@ -314,7 +314,7 @@ class App {
 							}
 
 							const releasedOn = changelogs[i].published_at
-								? ' released this on <strong>' + (new Date(changelogs[i].published_at)).toLocaleString("hy-AM") + '</strong>'
+								? ' released on <strong>' + (new Date(changelogs[i].published_at)).toLocaleString("hy-AM") + '</strong>'
 								: '';
 
 							changelogHtml += '<p class="text-muted">' +
@@ -705,7 +705,7 @@ class App {
 						uuid: uuid,
 						html_url: changelogItems[i].html_url,
 						version: changelogItems[i].version,
-						published_at: false,
+						published_at: changelogItems[i].date || false,
 						body: changelogItems[i].content,
 						author_login: false,
 						author_avatar: false,
