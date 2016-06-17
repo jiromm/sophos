@@ -609,7 +609,7 @@ class App {
 		var schema = require('./schemas/' + item.uuid + '.js'),
 			that = this;
 
-		this.request(item.changelog.url, (err, response, body) => {
+		this.request(item.changelog.changelogUrl, (err, response, body) => {
 			if (err || response.statusCode != 200) {
 				that.log(err);
 				return false;

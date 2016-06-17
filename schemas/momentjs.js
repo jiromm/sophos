@@ -30,7 +30,7 @@ exports.sch = {
 	changelog: {
 		isGithubRelease: false,
 		isInternalHandler: true,
-		url: 'https://raw.githubusercontent.com/moment/moment/master/CHANGELOG.md',
+		changelogUrl: 'https://raw.githubusercontent.com/moment/moment/master/CHANGELOG.md',
 		handle: (content) => {
 			let re = /###\s+(\d+\.\d+\.\d+)([^]*?)(?=###)/g,
 				matches = [],

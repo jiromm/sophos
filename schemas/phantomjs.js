@@ -30,7 +30,7 @@ exports.sch = {
 	changelog: {
 		isGithubRelease: false,
 		isInternalHandler: true,
-		url: 'https://raw.githubusercontent.com/ariya/phantomjs/master/ChangeLog',
+		changelogUrl: 'https://raw.githubusercontent.com/ariya/phantomjs/master/ChangeLog',
 		handle: (content) => {
 			content = content.replace(new RegExp("      *", 'g'), '');
 			content = content.replace(new RegExp("    ", 'g'), '');
