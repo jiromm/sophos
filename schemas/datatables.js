@@ -8,9 +8,9 @@ exports.sch = {
 		pinnedVersion: '',
 		isSubscribed: 0
 	},
-	versionUrl: 'http://www.datatables.net/',
+	versionUrl: 'https://raw.githubusercontent.com/DataTables/DataTables/master/package.json',
 	parseVersion: (body) => {
-		let re = /cdn\.datatables\.net\/(\d+\.\d+\.\d+)\/js\/jquery\.dataTables\.min\.js/gi,
+		let re = /"version": "(\d+\.\d+\.\d+)"/gi,
 			m;
 
 		while ((m = re.exec(body)) !== null) {
