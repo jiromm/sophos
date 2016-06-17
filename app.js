@@ -58,7 +58,7 @@ class App {
 	run() {
 		let that = this;
 
-		this.db.libs.loadDatabase((err) => {
+		this.db.libs.loadDatabase(err => {
 			if (err) {
 				that.error(err);
 				return false;
@@ -66,7 +66,7 @@ class App {
 
 			this.log('> nedb libs loaded');
 
-			that.db.changelogs.loadDatabase((err) => {
+			that.db.changelogs.loadDatabase(err => {
 				if (err) {
 					that.error(err);
 					return false;
@@ -113,7 +113,7 @@ class App {
 			});
 		});
 
-		this.emitter.on('version-updated', (lib) => {
+		this.emitter.on('version-updated', lib => {
 			var libEl = $('.' + lib.item._id),
 				badge = libEl.find('.badge.version');
 
@@ -126,7 +126,7 @@ class App {
 			that.log('> version updated for', lib.item._id, 'to', lib.version);
 		});
 
-		this.emitter.on('progress', (total) => {
+		this.emitter.on('progress', total => {
 			if (total) {
 				that.progress.total = total;
 				that.NProgress.start();
@@ -149,13 +149,13 @@ class App {
 			updateVersion = $('.update-versions'),
 			search = $('.search');
 
-		updateVersion.on('click', (e) => {
+		updateVersion.on('click', e => {
 			e.preventDefault();
 
 			that.fetchUpdates();
 		});
 
-		search.on('input', (e) => {
+		search.on('input', e => {
 			that.searchLibraries($(e.target).val(), (err, libs) => {
 				if (err) {
 					that.error(err);
@@ -166,7 +166,7 @@ class App {
 			});
 		});
 
-		libraries.on('click', '.list-group-item', (e) => {
+		libraries.on('click', '.list-group-item', e => {
 			e.preventDefault();
 
 			if ($(e.target).hasClass('subscription')) {
@@ -181,7 +181,7 @@ class App {
 			that.showLibContent(itemEl.attr('data-id'));
 		});
 
-		libraries.on('click', '.subscription', (e) => {
+		libraries.on('click', '.subscription', e => {
 			e.preventDefault();
 
 			that.changeSubscription(
@@ -189,7 +189,7 @@ class App {
 			);
 		});
 
-		mainContent.on('click', '.mark-as-done', (e) => {
+		mainContent.on('click', '.mark-as-done', e => {
 			e.preventDefault();
 
 			that.markAsDone(
@@ -213,7 +213,7 @@ class App {
 				$set: {
 					'columns.pinnedVersion': lib.columns.version
 				}
-			}, {}, (err) => {
+			}, {}, err => {
 				if (err) {
 					that.error(err);
 					return false;
@@ -239,7 +239,7 @@ class App {
 				return false;
 			}
 
-			that.updateLibSubscription(lib, isSubscribed ? 0 : 1, (err) => {
+			that.updateLibSubscription(lib, isSubscribed ? 0 : 1, err => {
 				if (err) {
 					that.error(err);
 					return false;
@@ -428,7 +428,7 @@ class App {
 	getSchemas(callback) {
 		var that = this;
 
-		this.readFiles(__dirname + '/schemas/', (schemas) => {
+		this.readFiles(__dirname + '/schemas/', schemas => {
 			let asyncLoop = require('node-async-loop');
 
 			asyncLoop(schemas, (schema, next) => {
@@ -441,7 +441,7 @@ class App {
 					that.log('> Schema insert for', schema.uuid);
 					next();
 				});
-			}, (err) => {
+			}, err => {
 				if (err) {
 					that.error(err);
 					return false;
@@ -462,7 +462,7 @@ class App {
 				return;
 			}
 
-			filenames.forEach((filename) => {
+			filenames.forEach(filename => {
 				var schemaModule = require(dirname + filename);
 
 				schemaList.push(schemaModule.sch);
@@ -537,7 +537,7 @@ class App {
 				'columns.version': version,
 				'columns.pinnedVersion': item.columns.isSubscribed ? item.columns.pinnedVersion : version
 			}
-		}, {}, (err) => {
+		}, {}, err => {
 			if (err) {
 				that.log(err);
 				return false;
@@ -620,7 +620,7 @@ class App {
 			// Remove changelog Item from archive, to prevent double fetch
 			that.changelogItems.splice(changelogItemIndex, 1);
 
-			that.formatChangelogItems(changelogs, item.uuid, (changelogItems) => {
+			that.formatChangelogItems(changelogs, item.uuid, changelogItems => {
 				that.log('> Inserting changelogs for.', item.uuid);
 				that.db.changelogs.insert(changelogItems, (err, lib) => {
 					if (err) {
@@ -652,7 +652,7 @@ class App {
 			// Remove changelog Item from archive, to prevent double fetch
 			that.changelogItems.splice(changelogItemIndex, 1);
 
-			that.separateGithubReleaseItems(body, item.uuid, (changelogItems) => {
+			that.separateGithubReleaseItems(body, item.uuid, changelogItems => {
 				that.log('> Inserting changelogs for.', item.uuid);
 				that.db.changelogs.insert(changelogItems, (err, lib) => {
 					if (err) {

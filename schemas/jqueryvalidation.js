@@ -29,6 +29,11 @@ exports.sch = {
 	},
 	changelog: {
 		isGithubRelease: false,
-		isInternalHandler: false
+		isInternalHandler: false,
+		changelogUrl: 'https://raw.githubusercontent.com/jzaefferer/jquery-validation/master/changelog.md',
+		url: 'https://github.com/jzaefferer/jquery-validation/blob/master/changelog.md',
+		handle: content => {
+			return '';
+		}
 	}
 };
