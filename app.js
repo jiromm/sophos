@@ -336,7 +336,7 @@ class App {
 					yourVersion +
 					'<p><span class="text-muted">Latest Version:</span> ' + lib.columns.version + '</p>' +
 					'<p><span class="text-muted">Url:</span> <a href="' + lib.columns.url + '" target="_blank">' + lib.columns.name + '</a></p>' +
-					'<h2>Changelog</h2>' +
+					'<h2>Changelog <a href="' + lib.changelog.url + '" class="btn btn-default btn-xs" target="_blank">Open</a></h2>' +
 					changelogHtml
 				);
 			});
