@@ -29,6 +29,8 @@ exports.sch = {
 	},
 	changelog: {
 		isGithubRelease: true,
-		releaseUrl: 'https://api.github.com/repos/twbs/bootstrap/releases'
+		isInternalHandler: false,
+		releaseUrl: 'https://api.github.com/repos/twbs/bootstrap/releases',
+		url: 'https://github.com/twbs/bootstrap/releases'
 	}
 };

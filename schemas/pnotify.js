@@ -29,6 +29,8 @@ exports.sch = {
 	},
 	changelog: {
 		isGithubRelease: true,
-		releaseUrl: 'https://api.github.com/repos/sciactive/pnotify/releases'
+		isInternalHandler: false,
+		releaseUrl: 'https://api.github.com/repos/sciactive/pnotify/releases',
+		url: 'https://github.com/sciactive/pnotify/releases'
 	}
 };

@@ -29,6 +29,8 @@ exports.sch = {
 	},
 	changelog: {
 		isGithubRelease: true,
-		releaseUrl: 'https://api.github.com/repos/enyo/dropzone/releases'
+		isInternalHandler: false,
+		releaseUrl: 'https://api.github.com/repos/enyo/dropzone/releases',
+		url: 'https://github.com/enyo/dropzone/releases'
 	}
 };

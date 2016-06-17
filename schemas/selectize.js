@@ -29,6 +29,8 @@ exports.sch = {
 	},
 	changelog: {
 		isGithubRelease: true,
-		releaseUrl: 'https://api.github.com/repos/selectize/selectize.js/releases'
+		isInternalHandler: false,
+		releaseUrl: 'https://api.github.com/repos/selectize/selectize.js/releases',
+		url: 'https://github.com/selectize/selectize.js/releases'
 	}
 };

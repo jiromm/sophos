@@ -29,6 +29,8 @@ exports.sch = {
 	},
 	changelog: {
 		isGithubRelease: true,
-		releaseUrl: 'https://api.github.com/repos/dangrossman/bootstrap-daterangepicker/releases'
+		isInternalHandler: false,
+		releaseUrl: 'https://api.github.com/repos/dangrossman/bootstrap-daterangepicker/releases',
+		url: 'https://github.com/dangrossman/bootstrap-daterangepicker/releases'
 	}
 };

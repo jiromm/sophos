@@ -29,6 +29,8 @@ exports.sch = {
 	},
 	changelog: {
 		isGithubRelease: true,
-		releaseUrl: 'https://api.github.com/repos/Modernizr/Modernizr/releases'
+		isInternalHandler: false,
+		releaseUrl: 'https://api.github.com/repos/Modernizr/Modernizr/releases',
+		url: 'https://github.com/Modernizr/Modernizr/releases'
 	}
 };

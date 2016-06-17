@@ -28,6 +28,8 @@ exports.sch = {
 		return false;
 	},
 	changelog: {
-		isGithubRelease: false
+		isGithubRelease: false,
+		isInternalHandler: false,
+		url: 'https://cdn.datatables.net/releases.html'
 	}
 };
