@@ -29,6 +29,7 @@ exports.sch = {
 	},
 	changelog: {
 		isGithubRelease: false,
-		isInternalHandler: false
+		isInternalHandler: false,
+		url: 'https://jqueryui.com/changelog/'
 	}
 };
