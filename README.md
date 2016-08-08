@@ -1,4 +1,3 @@
 # sophos
 
-`npm install --save`
-`npm start`
+`npm install --save && npm start`
