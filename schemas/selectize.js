@@ -9,9 +9,9 @@ exports.sch = {
 		isSubscribed: 0
 	},
 	versionUrl: 'https://raw.githubusercontent.com/selectize/selectize.js/master/package.json',
-	parseVersion: function(body) {
-		var re = /"version": "(\d+\.\d+\.\d+)"/gi;
-		var m;
+	parseVersion: (body) => {
+		let re = /"version": "(\d+\.\d+\.\d+)"/gi,
+			m;
 
 		while ((m = re.exec(body)) !== null) {
 			if (m.index === re.lastIndex) {
@@ -29,6 +29,8 @@ exports.sch = {
 	},
 	changelog: {
 		isGithubRelease: true,
-		releaseUrl: 'https://api.github.com/repos/selectize/selectize.js/releases'
+		isInternalHandler: false,
+		releaseUrl: 'https://api.github.com/repos/selectize/selectize.js/releases',
+		url: 'https://github.com/selectize/selectize.js/releases'
 	}
 };

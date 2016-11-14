@@ -1,7 +1,7 @@
 exports.sch = {
-	uuid: 'jquery2',
+	uuid: 'jquery',
 	columns: {
-		name: 'jQuery 2',
+		name: 'jQuery',
 		author: 'jQuery Foundation, Inc.',
 		url: 'http://jquery.com/',
 		version: '',
@@ -9,9 +9,9 @@ exports.sch = {
 		isSubscribed: 0
 	},
 	versionUrl: 'http://jquery.com/download/',
-	parseVersion: function(body) {
-		var re = /Download the compressed, production jQuery (2\.\d+\.\d+)/gi;
-		var m;
+	parseVersion: (body) => {
+		let re = /Download the compressed, production jQuery (\d+\.\d+\.\d+)/gi,
+			m;
 
 		while ((m = re.exec(body)) !== null) {
 			if (m.index === re.lastIndex) {
@@ -26,5 +26,10 @@ exports.sch = {
 		}
 
 		return false;
+	},
+	changelog: {
+		isGithubRelease: false,
+		isInternalHandler: false,
+		url: 'https://blog.jquery.com/'
 	}
 };

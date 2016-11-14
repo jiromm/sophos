@@ -8,10 +8,10 @@ exports.sch = {
 		pinnedVersion: '',
 		isSubscribed: 0
 	},
-	versionUrl: 'http://www.datatables.net/',
-	parseVersion: function(body) {
-		var re = /cdn\.datatables\.net\/(\d+\.\d+\.\d+)\/js\/jquery\.dataTables\.min\.js/gi;
-		var m;
+	versionUrl: 'https://raw.githubusercontent.com/DataTables/DataTables/master/package.json',
+	parseVersion: (body) => {
+		let re = /"version": "(\d+\.\d+\.\d+)"/gi,
+			m;
 
 		while ((m = re.exec(body)) !== null) {
 			if (m.index === re.lastIndex) {
@@ -26,5 +26,10 @@ exports.sch = {
 		}
 
 		return false;
+	},
+	changelog: {
+		isGithubRelease: false,
+		isInternalHandler: false,
+		url: 'https://cdn.datatables.net/releases.html'
 	}
 };

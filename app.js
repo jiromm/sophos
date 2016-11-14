@@ -58,7 +58,7 @@ class App {
 	run() {
 		let that = this;
 
-		this.db.libs.loadDatabase((err) => {
+		this.db.libs.loadDatabase(err => {
 			if (err) {
 				that.error(err);
 				return false;
@@ -66,7 +66,7 @@ class App {
 
 			this.log('> nedb libs loaded');
 
-			that.db.changelogs.loadDatabase((err) => {
+			that.db.changelogs.loadDatabase(err => {
 				if (err) {
 					that.error(err);
 					return false;
@@ -113,7 +113,7 @@ class App {
 			});
 		});
 
-		this.emitter.on('version-updated', (lib) => {
+		this.emitter.on('version-updated', lib => {
 			var libEl = $('.' + lib.item._id),
 				badge = libEl.find('.badge.version');
 
@@ -126,7 +126,7 @@ class App {
 			that.log('> version updated for', lib.item._id, 'to', lib.version);
 		});
 
-		this.emitter.on('progress', (total) => {
+		this.emitter.on('progress', total => {
 			if (total) {
 				that.progress.total = total;
 				that.NProgress.start();
@@ -149,13 +149,13 @@ class App {
 			updateVersion = $('.update-versions'),
 			search = $('.search');
 
-		updateVersion.on('click', (e) => {
+		updateVersion.on('click', e => {
 			e.preventDefault();
 
 			that.fetchUpdates();
 		});
 
-		search.on('input', (e) => {
+		search.on('input', e => {
 			that.searchLibraries($(e.target).val(), (err, libs) => {
 				if (err) {
 					that.error(err);
@@ -166,7 +166,7 @@ class App {
 			});
 		});
 
-		libraries.on('click', '.list-group-item', (e) => {
+		libraries.on('click', '.list-group-item', e => {
 			e.preventDefault();
 
 			if ($(e.target).hasClass('subscription')) {
@@ -181,7 +181,7 @@ class App {
 			that.showLibContent(itemEl.attr('data-id'));
 		});
 
-		libraries.on('click', '.subscription', (e) => {
+		libraries.on('click', '.subscription', e => {
 			e.preventDefault();
 
 			that.changeSubscription(
@@ -189,7 +189,7 @@ class App {
 			);
 		});
 
-		mainContent.on('click', '.mark-as-done', (e) => {
+		mainContent.on('click', '.mark-as-done', e => {
 			e.preventDefault();
 
 			that.markAsDone(
@@ -213,7 +213,7 @@ class App {
 				$set: {
 					'columns.pinnedVersion': lib.columns.version
 				}
-			}, {}, (err) => {
+			}, {}, err => {
 				if (err) {
 					that.error(err);
 					return false;
@@ -239,7 +239,7 @@ class App {
 				return false;
 			}
 
-			that.updateLibSubscription(lib, isSubscribed ? 0 : 1, (err) => {
+			that.updateLibSubscription(lib, isSubscribed ? 0 : 1, err => {
 				if (err) {
 					that.error(err);
 					return false;
@@ -298,14 +298,30 @@ class App {
 				if (changelogs.length) {
 					for (let i in changelogs) {
 						if (changelogs.hasOwnProperty(i)) {
+							let author = '';
+
+							if (
+								changelogs[i].author_url &&
+								changelogs[i].author_avatar &&
+								changelogs[i].author_login
+							) {
+								author = ' <a href="' + changelogs[i].author_url + '" target="_blank">';
+
+								const authorAvatar = '<img src="' + changelogs[i].author_avatar + '" width="18" height="18">';
+								const authorLogin = ' <span class="label label-default">' + changelogs[i].author_login + '</span>';
+
+								author += authorAvatar + authorLogin + '</a>';
+							}
+
+							const releasedOn = changelogs[i].published_at
+								? ' released on <strong>' + (new Date(changelogs[i].published_at)).toLocaleString("hy-AM") + '</strong>'
+								: '';
+
 							changelogHtml += '<p class="text-muted">' +
-								'<big><big>' + changelogs[i].version + '</big></big>' +
+								'<span class="changelog-version text-primary">' + changelogs[i].version + '</span>' +
 								'<span class="text-bottom">' +
-									' <a href="' + changelogs[i].author_url + '" target="_blank">' +
-										'<img src="' + changelogs[i].author_avatar + '" width="18" height="18">' +
-										' <span class="label label-default">' + changelogs[i].author_login + '</span>' +
-									'</a> released this on' +
-									' <strong>' + (new Date(changelogs[i].published_at)).toLocaleString("hy-AM") + '</strong>' +
+									author +
+									releasedOn +
 								'</span>' +
 								' <a href="' + changelogs[i].html_url + '" target="_blank" class="btn btn-xs btn-default pull-right">Open</a>' +
 							'</p>';
@@ -320,7 +336,7 @@ class App {
 					yourVersion +
 					'<p><span class="text-muted">Latest Version:</span> ' + lib.columns.version + '</p>' +
 					'<p><span class="text-muted">Url:</span> <a href="' + lib.columns.url + '" target="_blank">' + lib.columns.name + '</a></p>' +
-					'<h2>Changelog</h2>' +
+					'<h2>Changelog <a href="' + lib.changelog.url + '" class="btn btn-default btn-xs" target="_blank">Open</a></h2>' +
 					changelogHtml
 				);
 			});
@@ -362,7 +378,8 @@ class App {
 		this.db.changelogs.find({
 			uuid: uuid
 		}).sort({
-			published_at: -1
+			published_at: -1,
+			version: -1
 		}).exec(callback);
 	}
 
@@ -411,7 +428,7 @@ class App {
 	getSchemas(callback) {
 		var that = this;
 
-		this.readFiles(__dirname + '/schemas/', (schemas) => {
+		this.readFiles(__dirname + '/schemas/', schemas => {
 			let asyncLoop = require('node-async-loop');
 
 			asyncLoop(schemas, (schema, next) => {
@@ -421,10 +438,10 @@ class App {
 						return false;
 					}
 
-					that.log('> Insert.', lib);
+					that.log('> Schema insert for', schema.uuid);
 					next();
 				});
-			}, (err) => {
+			}, err => {
 				if (err) {
 					that.error(err);
 					return false;
@@ -445,7 +462,7 @@ class App {
 				return;
 			}
 
-			filenames.forEach((filename) => {
+			filenames.forEach(filename => {
 				var schemaModule = require(dirname + filename);
 
 				schemaList.push(schemaModule.sch);
@@ -520,7 +537,7 @@ class App {
 				'columns.version': version,
 				'columns.pinnedVersion': item.columns.isSubscribed ? item.columns.pinnedVersion : version
 			}
-		}, {}, (err) => {
+		}, {}, err => {
 			if (err) {
 				that.log(err);
 				return false;
@@ -538,6 +555,8 @@ class App {
 	}
 
 	prepareForChangelog(item) {
+		this.log('> Preparing to fetch changelog for', item.uuid);
+
 		this.changelogItems[item.uuid] = {
 			uuid: item.uuid,
 			changelog: item.changelog
@@ -545,21 +564,74 @@ class App {
 	}
 
 	fetchChangelogs() {
-		this.log('> Trying to fetch changelog(s) for', this.changelogItems.length, 'libs');
+		this.log('> Trying to fetch changelogs');
 
 		for (let i in this.changelogItems) {
 			if (this.changelogItems.hasOwnProperty(i)) {
 				let item = this.changelogItems[i];
 
-				if (item.changelog !== false) {
-					if (item.changelog.isGithubRelease) {
-						this.handleGithubRelease(item, i);
+				this.removeExistingChangelogs(item.uuid, () => {
+					if (item.changelog !== false) {
+						if (item.changelog.isGithubRelease) {
+							this.handleGithubRelease(item, i);
+						}
+
+						if (item.changelog.isInternalHandler) {
+							this.handleByCustomHandler(item, i);
+						}
+					} else {
+						this.log('We don\'t have changelog schema for', item.uuid);
 					}
-				} else {
-					this.log('We don\'t have changelog schema for', item.uuid);
-				}
+				});
 			}
 		}
+	}
+
+	removeExistingChangelogs(uuid, callback) {
+		let that = this;
+
+		this.log('> Removing changelogs for.', uuid);
+		this.db.changelogs.remove({
+			uuid: uuid
+		}, {
+			multi: true
+		}, (err, lib) => {
+			if (err) {
+				that.log(err);
+				return false;
+			}
+
+			callback();
+		});
+	}
+
+	handleByCustomHandler(item, changelogItemIndex) {
+		var schema = require('./schemas/' + item.uuid + '.js'),
+			that = this;
+
+		this.request(item.changelog.changelogUrl, (err, response, body) => {
+			if (err || response.statusCode != 200) {
+				that.log(err);
+				return false;
+			}
+
+			let changelogs = schema.sch.changelog.handle(body);
+
+			// Remove changelog Item from archive, to prevent double fetch
+			that.changelogItems.splice(changelogItemIndex, 1);
+
+			that.formatChangelogItems(changelogs, item.uuid, changelogItems => {
+				that.log('> Inserting changelogs for.', item.uuid);
+				that.db.changelogs.insert(changelogItems, (err, lib) => {
+					if (err) {
+						that.error(err);
+						return false;
+					}
+
+					that.log('> Changelog Insert.', lib.length, 'objects');
+				});
+			});
+		});
 	}
 
 	handleGithubRelease(item, changelogItemIndex) {
@@ -580,12 +652,7 @@ class App {
 			// Remove changelog Item from archive, to prevent double fetch
 			that.changelogItems.splice(changelogItemIndex, 1);
 
-			that.separateGithubReleaseItems(body, item.uuid, (changelogItems) => {
-				that.log('> Removing changelogs for.', item.uuid);
-				that.db.changelogs.remove({
-					uuid: item.uuid
-				});
-
+			that.separateGithubReleaseItems(body, item.uuid, changelogItems => {
 				that.log('> Inserting changelogs for.', item.uuid);
 				that.db.changelogs.insert(changelogItems, (err, lib) => {
 					if (err) {
@@ -607,11 +674,14 @@ class App {
 		if (releases.length) {
 			for (let i in releases) {
 				if (releases.hasOwnProperty(i)) {
+					if (releases[i].prerelease) {
+						continue;
+					}
+
 					releaseList.push({
 						uuid: uuid,
 						html_url: releases[i].html_url,
-						tag_name: releases[i].tag_name,
-						version: releases[i].name,
+						version: releases[i].tag_name,
 						published_at: new Date(releases[i].published_at),
 						body: releases[i].body,
 						author_login: releases[i].author.login,
@@ -622,6 +692,29 @@ class App {
 			}
 
 			callback(releaseList);
+		}
+	}
+
+	formatChangelogItems(changelogItems, uuid, callback) {
+		let changelogItemList = [];
+
+		if (changelogItems.length) {
+			for (let i in changelogItems) {
+				if (changelogItems.hasOwnProperty(i)) {
+					changelogItemList.push({
+						uuid: uuid,
+						html_url: changelogItems[i].html_url,
+						version: changelogItems[i].version,
+						published_at: changelogItems[i].date || false,
+						body: changelogItems[i].content,
+						author_login: false,
+						author_avatar: false,
+						author_url: false,
+					});
+				}
+			}
+
+			callback(changelogItemList);
 		}
 	}
 

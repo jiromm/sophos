@@ -9,9 +9,9 @@ exports.sch = {
 		isSubscribed: 0
 	},
 	versionUrl: 'http://jqueryui.com/',
-	parseVersion: function(body) {
-		var re = /Download jQuery UI (\d+\.\d+\.\d+)/gi;
-		var m;
+	parseVersion: (body) => {
+		let re = /Download jQuery UI (\d+\.\d+\.\d+)/gi,
+			m;
 
 		while ((m = re.exec(body)) !== null) {
 			if (m.index === re.lastIndex) {
@@ -26,5 +26,10 @@ exports.sch = {
 		}
 
 		return false;
+	},
+	changelog: {
+		isGithubRelease: false,
+		isInternalHandler: false,
+		url: 'https://jqueryui.com/changelog/'
 	}
 };

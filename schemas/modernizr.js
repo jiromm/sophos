@@ -9,9 +9,9 @@ exports.sch = {
 		isSubscribed: 0
 	},
 	versionUrl: 'https://raw.githubusercontent.com/Modernizr/Modernizr/master/package.json',
-	parseVersion: function(body) {
-		var re = /"version": "(\d+\.\d+\.\d+)"/gi;
-		var m;
+	parseVersion: (body) => {
+		let re = /"version": "(\d+\.\d+\.\d+)"/gi,
+			m;
 
 		while ((m = re.exec(body)) !== null) {
 			if (m.index === re.lastIndex) {
@@ -26,5 +26,11 @@ exports.sch = {
 		}
 
 		return false;
+	},
+	changelog: {
+		isGithubRelease: true,
+		isInternalHandler: false,
+		releaseUrl: 'https://api.github.com/repos/Modernizr/Modernizr/releases',
+		url: 'https://github.com/Modernizr/Modernizr/releases'
 	}
 };
