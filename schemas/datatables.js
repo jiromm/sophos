@@ -10,7 +10,7 @@ exports.sch = {
 	},
 	versionUrl: 'https://raw.githubusercontent.com/DataTables/DataTables/master/package.json',
 	parseVersion: (body) => {
-		let re = /"version": "(\d+\.\d+\.\d+)"/gi,
+		let re = /"version": "(\d+\.\d+\.\d+)?(-dev)"/gi,
 			m;
 
 		while ((m = re.exec(body)) !== null) {

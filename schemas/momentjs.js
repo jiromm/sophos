@@ -9,7 +9,7 @@ exports.sch = {
 		isSubscribed: 0
 	},
 	versionUrl: 'https://raw.githubusercontent.com/moment/moment/develop/package.json',
-	parseVersion: (body) => { return Math.round(Math.random() * 1000);
+	parseVersion: (body) => {
 		let re = /"version": "(\d+\.\d+\.\d+)"/gi,
 			m;
 
